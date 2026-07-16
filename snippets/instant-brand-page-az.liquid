@@ -1,0 +1,100 @@
+{%  liquid
+
+  assign az_style = 'standard'
+  assign az_font_size = '20px'
+  assign az_font_color = ''
+  assign az_accent_color = ''
+  assign az_accent_style = 'inverse'
+%}
+
+<style>
+
+:root {
+  --az_font_size: {{ az_font_size }};
+  --az_font_color: {{ az_font_color }};
+  --az_accent_color: {{ az_accent_color }};
+}
+  
+.instant-brand-az {
+  font-size: var(--az_font_size);
+}
+
+.instant-brand-az.standard {
+    column-gap: calc(var(--az_font_size) / 2);
+}
+
+.instant-brand-az.square.normal .az-item {
+  border: 1px solid var(--az_accent_color);
+} 
+
+.instant-brand-az.round.normal .az-item {
+  border: 1px solid var(--az_accent_color);
+}   
+
+.instant-brand-az.square.inverse .az-item {
+  border: 1px solid var(--az_font_color);
+  background: var(--az_accent_color);
+} 
+
+.instant-brand-az.round.inverse .az-item {
+  border: 1px solid var(--az_font_color);
+  background: var(--az_accent_color);
+}    
+
+.instant-brand-az.standard a.instant-brand-letter {
+  color: var(--az_font_color);
+} 
+
+.instant-brand-az.standard a.instant-brand-letter:visited {
+  color: var(--az_font_color) !important;
+} 
+
+.instant-brand-az.square a.instant-brand-letter {
+  width: calc(var(--az_font_size) * 2);
+} 
+  
+.instant-brand-az.square a.instant-brand-letter {
+  color: var(--az_font_color);
+} 
+
+.instant-brand-az.square a.instant-brand-letter:visited {
+  color: var(--az_font_color) !important;
+}
+
+.instant-brand-az.round a.instant-brand-letter {
+  width: calc(var(--az_font_size) * 2);
+} 
+  
+.instant-brand-az.round a.instant-brand-letter {
+  color: var(--az_font_color);
+} 
+
+.instant-brand-az.round a.instant-brand-letter:visited {
+  color: var(--az_font_color) !important;
+}
+  
+
+</style>
+
+ <div class="instant-brand-az {{ az_style }} {{ az_accent_style }}">
+{% for brand_string in my_vendor_array_sorted %}
+  {% assign brand_split = brand_string | split: '!**!' %}
+  {% assign product_vendor = brand_split[1] %}
+  {% unless excludedbrands_array contains  product_vendor %}
+    {% assign startingletter = brand_split[0] | capitalize %}
+    {% if consolidate_numbers and numbers_array contains startingletter  %}
+      {% assign startingletter = consolidate_numbers_char %}
+    {% endif %}
+    {% if headerletter != startingletter %}
+      {% if index_long_link %} 
+        {% assign az_nav_url = page.url | append: "#zz" | append: startingletter %}
+      {% else %}
+        {% assign az_nav_url = "#zz" | append: startingletter %}
+      {% endif %}
+      <div class="az-item"><a class='instant-brand-letter' href='{{ az_nav_url }}'>{{ startingletter }}</a></div>
+      {% assign headerletter = startingletter %}  
+    {% endif%}
+  {% endunless%}
+{% endfor %}
+ </div>
+

@@ -1,0 +1,18 @@
+<div class="instant-brand-item {{ brandformat }} {{ desktop_alignment }} {{ mobile_alignment }}">
+  {%  if bBookmark %}<span class="anchor">{{ startingbookmark }}</span>{%  endif %}
+    
+  <div class="instant-brand-item-image-wrapper {{ brandformat }} {{ desktop_alignment }} {{ mobile_alignment }}"> 
+  <a href="{{ vendorurl }}" class="instant-brand-image-link">
+    <img src="{{ vendorimageurl }}" class="{% if vendorimageurl contains 'ibp-no-image' %} opacity-03 {% endif %}" alt="{{ brand_name }}" />
+  </a>
+    <div class="instant-brand-sale image {{ sale_icon_display }}">{%  render 'instant-brand-page-sale-icon' with salebanner:salebanner %}</div>
+  </div>
+  <div class="instant-brand-item-text {{ brandformat }} {{ desktop_alignment }} {{ mobile_alignment }}"> 
+      
+      <a href="{{ vendorurl }}" class="instant-brand-text-link">
+          {{ brand_name  }}     
+       <div class="instant-brand-sale text {{ sale_icon_display }}">{%  render 'instant-brand-page-sale-icon' with salebanner:salebanner %}</div>
+      </a>
+  </div>
+
+</div>

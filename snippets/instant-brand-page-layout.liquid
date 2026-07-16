@@ -1,0 +1,759 @@
+{%  liquid
+
+  comment 
+    Start OS2 Only Settings = Placholders
+  endcomment
+
+  assign page_font_color = ''
+  assign page_header_color = ''
+  assign page_header_size = '18px'
+  assign image_radius = '4' | append: '%'
+  assign desktop_alignment = 'desk_left'
+  assign mobile_alignment = 'mob_center'
+  assign row_divider_color = ''
+  assign sort_order = ''
+  assign default_url_arr = '/collections/vendors?q=%brand%' | split: '%brand%' 
+
+  comment 
+    Start Property Setting
+  endcomment
+
+  assign numbers_array = "0,1,2,3,4,5,6,7,8,9" | split: ","
+
+  assign fontsize = fontsize | append: "px" 
+  assign page_font_size = fontsize
+
+  assign img_number = imgwith | plus: 0
+  if img_number < 51
+  	assign img_to_small = true  
+  endif
+
+  assign imgwith = imgwith | append: "px"
+
+  if bshowimages
+    if img_to_small
+      assign desktop_alignment = 'desk_left'
+      assign mobile_alignment = 'mob_left'
+    else
+      assign desktop_alignment = 'desk_center'
+      assign mobile_alignment = 'mob_center'
+    endif
+  endif 
+
+  unless brandformat == 'vertical'
+      assign maxvendor = 10000000
+  endunless
+
+  if brandformat == 'vertical'
+    assign max_col_width = pagecolumns | times: 3
+  else
+   assign max_col_width = pagecolumns | times: 2.5
+  endif 
+  assign max_col_width = 100 | minus: max_col_width | append: '%'
+  assign max_col_px = 599 | divided_by: pagecolumns | append: 'px'
+
+  if brandformat == 'catalogue'
+    assign desktop_alignment = 'desk_center'
+    assign mobile_alignment = 'mob_center'
+  endif
+
+  if bshowimages
+    unless img_to_small
+      unless brandformat == 'catalogue'
+        assign max_col_px = imgwith
+      else 
+        if img_number < 100
+          assign max_col_px = '100px'
+        else
+          assign max_col_px = imgwith
+        endif
+      endunless 
+    endunless 
+  endif
+
+  assign sale_icon_margin_top = '10%'
+  assign sale_icon_margin_right = '-20%'
+  assign sale_icon_size = '25%' 
+
+  assign text_sale_icon_size = page_font_size | replace: 'px', '' 
+  assign text_sale_icon_size = text_sale_icon_size | plus: 2
+  assign text_sale_icon_size = text_sale_icon_size | append: 'px'
+
+  assign mobile_col_max = 2
+
+%}
+
+{% capture headerstart %}
+  <{{ headerformat }} class="instant-brand-header" style="{{ headerstyle }}">
+{% endcapture %}
+
+{% capture headerend %}
+  </{{ headerformat }}>
+{% endcapture %}
+
+{{ 'lfs-instant-brand-page.css' | asset_url | stylesheet_tag }}
+
+<style>
+
+:root {
+  --page_font_size: {{ page_font_size }};
+  --page_font_color: {{ page_font_color }};
+  --page_header_size: {{ page_header_size }};
+  --page_header_color: {{ page_header_color }};
+  
+  
+  --max_columns: {{ pagecolumns }};
+  --max_size:  {{ max_col_width }}; 
+  --min_column_width: {{ max_col_px }};  
+
+  --sale_icon_color: {{ saleiconcolor }};
+  --sale_icon_text: {{ text_sale_icon_size }};
+  --sale_icon_image: {{ sale_icon_size }};
+
+  --header_col_offset: 80px;  
+}
+
+/* ///// General Settings ///// */
+/* Page Brand Grid - Contains Columns */
+
+.instant-brand-grid {
+  display: grid;
+  grid-column-gap: var(--col_gap);
+  grid-row-gap: var(--row_gap);
+}  
+
+/* Brand Grid Column - Contains Rows */
+
+.instant-brand-grid-column {
+  display: grid;
+  grid-column-gap: var(--grid_col_gap);
+  grid-row-gap: var(--grid_row_gap);
+}
+
+/* Brand Column Row - Contains Header and Blocks */
+
+.instant-brand-grid-row {
+  display: grid;
+  grid-column-gap: var(--row_col_gap);
+  grid-row-gap: var(--row_row_gap);
+}
+
+/* Brand Block Header - Holds Header Letter  */
+
+
+.instant-brand-header {
+  margin: 0px !important;
+  font-weight: bold;
+  font-size: var(--page_header_size) !important;
+  color: var(--page_header_color) !important;
+}
+
+/* Brand Block  - Holds Brand Items */
+
+.instant-brand-block-brand {
+  display: grid;
+  grid-column-gap: var(--block_col_gap);
+  grid-row-gap: var(--block_row_gap);
+}
+
+/* Brand Items  - Holds Brand Image wrapper and Text */
+
+.instant-brand-item {
+  display: grid;
+  grid-column-gap: var(--brand_col_gap);
+  grid-row-gap: var(--brand_row_gap);
+}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+.instant-brand-item-image-wrapper {
+  position: relative;
+  height: {{ imgwith }};
+  width: {{ imgwith }};
+}
+
+.instant-brand-item-image-wrapper img {
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0px !important;
+  border: 0px !important;
+}
+
+{% unless fitbrandimage %}
+
+  .instant-brand-item-image-wrapper img {
+    object-fit: cover;
+  }
+
+{% else %}
+
+  .instant-brand-item-image-wrapper img {
+    object-fit: contain;
+  }
+
+{% endunless %}
+
+{% unless bshowimages %}
+  
+  .instant-brand-item-image-wrapper {
+    display: none !important;
+  }
+
+{% endunless %}
+
+/* Image Sale Icon  */
+
+/* Sale Icon Display */
+
+.instant-brand-sale svg {
+  fill: var(--sale_icon_color);
+  stroke: white;
+  stroke-width: 1px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.instant-brand-sale.image  {
+  position: absolute;
+  top: {{ sale_icon_margin_top }};
+  right: {{ sale_icon_margin_right }};
+  width: var(--sale_icon_image);
+  transform: translate(-50%, -50%);
+}
+
+  
+.instant-brand-sale.image.none {
+  display: none;
+}
+
+{% if img_to_small and bshowtext %}
+  .instant-brand-sale.image.show {
+    display: none !important;
+  } 
+{% else %}
+  .instant-brand-sale.image.show {
+    display: block;
+  }    
+{% endif %}
+
+/* Brand Text - Holds Brand Name text link and sale icon */
+
+.instant-brand-item-text {
+  grid-template-columns: 1fr;
+}
+
+{% unless bshowtext %} 
+  .instant-brand-item-text {
+    display: none !important;
+  }
+
+{%  endunless %}
+/* Brand Link */
+
+.instant-brand-text-link {
+  display: flex !important;
+  height: 100%;
+  align-items: center;
+  column-gap: var(--text_row_gap);
+}
+
+a.instant-brand-text-link {
+  font-size: var(--page_font_size) !important;
+  color: var(--page_font_color) !important;
+  text-decoration: none;
+}
+
+/* Image Sale Icon  */
+
+.instant-brand-sale.text {
+  width: var(--sale_icon_text);
+}
+
+.instant-brand-sale.text svg {
+  width: var(--sale_icon_text) !important;
+}
+
+.instant-brand-sale.text.none {
+  display: none;
+}
+
+{%  if bshowimages %}  
+  {%  if img_to_small  %}
+      .instant-brand-sale.text.show {
+        display: block;
+      }
+  {% else %}  
+      .instant-brand-sale.text.show {
+      display: none !important;
+    }
+  {% endif %}  
+{% else %}
+    .instant-brand-sale.text.show {
+    display: block;
+  }
+{% endif %}  
+
+/* ///// Catalogue Template ///// */    
+
+/* Brand Grid Column - Contains Rows - auto fill column */
+
+.instant-brand-grid-column.catalogue {
+  grid-template-columns: repeat(auto-fill, minmax(var(--min_column_width), 1fr));
+}
+
+/* Brand Items  - Holds Brand Image wrapper and Text - remove Grid */
+
+{%  if bshowimages %}  
+  {%  if img_to_small  %}
+        @media screen and (min-width: 500px) {  
+            .instant-brand-item-image-wrapper.catalogue.desk_left {
+                margin: inherit;
+            }
+        }
+
+        @media screen and (max-width: 500px) {  
+            .instant-brand-item-image-wrapper.catalogue.mob_left {
+                margin: inherit;
+            }
+        }
+  {% endif %}  
+{% else %}
+    .instant-brand-item.catalogue {
+      border: 1px solid {{ row_divider_color }};
+      aspect-ratio: 1;
+    }
+{% endif %}  
+  
+/* Brand Text */
+
+{%  unless bshowimages %}  
+
+  .instant-brand-item-text.catalogue {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+  }
+
+{% endunless %}  
+
+
+/* ///// Horizontal Template ///// */
+
+/* Brand Column Row - Contains Header and Blocks. Split columns for left alignment and center for center */
+
+.instant-brand-grid-row.horizontal {
+    border-top: 1px solid {{ row_divider_color }};
+}
+
+.instant-brand-block-brand.horizontal {
+  grid-template-columns: repeat(auto-fill, minmax(max(var(--min_column_width), var(--max_size)/var(--max_columns)), 1fr));
+}
+
+/* Brand Block  - Holds Brand Items */
+
+/* Brand Items  - Holds Brand Image wrapper and Text */
+
+{% if img_to_small and bshowimages %}
+
+  .instant-brand-item.horizontal {
+      grid-template-columns: min-content 1fr;
+  }
+
+    @media screen and (min-width: 500px) {  
+      .instant-brand-item.horizontal.desk_center {
+        margin: auto;
+    }
+
+  }
+
+  @media screen and (max-width: 500px) {  
+
+    .instant-brand-item.horizontal.mob_center {
+      margin: auto;
+    }
+
+  }
+{% endif %}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+{% if img_to_small %}
+  
+  .instant-brand-item-image-wrapper.horizontal {
+    margin: auto;
+  } 
+{% endif %}
+
+/* ///// List Template ///// */
+
+/* Brand Column Row - Contains Header and Blocks. Split columns for left alignment and center for center */
+
+.instant-brand-grid-row.list {
+    {% if row_divider_color == 'inherit' %}
+    border-top: 1px solid;
+    {% else %}
+    border-top: 1px solid {{ row_divider_color }};
+    {% endif %}
+}
+
+/* Brand Row  - Holds Brand Block */
+
+{% if img_to_small and bshowimages %}
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-grid-row.list {
+      grid-template-columns: var(--header_col_offset) 1fr;
+  }
+
+  .instant-brand-grid-row.list {
+      grid-template-columns: var(--header_col_offset) 1fr;
+  }
+}
+
+{% endif %}
+
+/* Brand Items  - Holds Brand Image wrapper and Text */
+
+{% if bshowimages %}
+
+   @media screen and (min-width: 500px) {  
+  
+    .instant-brand-item.list {
+      grid-template-columns: min-content;
+    
+    }
+     
+  }
+
+{% endif %}
+
+{% if img_to_small and bshowimages %}
+
+  .instant-brand-item.list {
+      grid-template-columns: min-content 1fr;
+  }
+
+    @media screen and (min-width: 500px) {  
+      .instant-brand-item.list.desk_center {
+        margin: auto;
+    }
+
+    }
+
+  @media screen and (max-width: 500px) {  
+
+    .instant-brand-item.list.mob_center {
+      margin: auto;
+    }
+
+  }
+{% endif %}
+
+
+/* ///// Page Template ///// */    
+
+/* Brand Grid Column - Contains Rows - 1 column */
+
+.instant-brand-grid-column.page_vert {
+  grid-template-columns: repeat(auto-fill, minmax(max(var(--min_column_width), var(--max_size)/var(--max_columns)), 1fr));
+  grid-auto-rows: min-content;
+}
+
+/* Brand Column Row - Contains Header and Blocks. Split columns for left alignment and center for center */
+
+.instant-brand-grid-row.page_vert {
+  grid-template-rows: calc(var(--page_header_size) + var(--header_row_offset)) 1fr;
+}
+  
+/* Brand Block  - Holds Brand Items */
+
+/* Brand Items  - Holds Brand Image wrapper and Text */
+
+{% if img_to_small and bshowimages %}
+
+  .instant-brand-item.page_vert {
+      grid-template-columns: min-content 1fr;
+  }
+
+    @media screen and (min-width: 500px) {  
+      .instant-brand-item.page_vert.desk_center {
+        margin: auto;
+    }
+
+  }
+
+  @media screen and (max-width: 500px) {  
+
+    .instant-brand-item.page_vert.mob_center {
+      margin: auto;
+    }
+
+  }
+{% endif %}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+
+{% if img_to_small %}
+  
+  .instant-brand-item-image-wrapper.page_vert {
+    margin: auto;
+  } 
+{% endif %}
+
+
+/* ///// Vertical Template ///// */
+
+/* Page Brand Grid - Contains Columns - auto fill based on number and min max */
+
+.instant-brand-grid.vertical {
+  grid-template-columns: repeat(auto-fill, minmax(max(var(--min_column_width), var(--max_size)/var(--max_columns)), 1fr));
+}  
+
+@media screen and (max-width: 500px) {  
+
+  .instant-brand-grid.vertical {
+    grid-template-columns: repeat(auto-fill, minmax(max(var(--min_column_width), var(--max_size)/ {{ pagecolumns | at_most: 2 }}), 1fr));
+  }  
+
+}
+
+@media screen and (max-width: 900px) {  
+
+  .instant-brand-grid.vertical {
+    grid-template-columns: repeat(auto-fill, minmax(max(var(--min_column_width), var(--max_size)/ {{ pagecolumns | at_most: 4 }}), 1fr));
+  }  
+
+}
+
+/* Brand Column Row - Contains Header and Blocks. Split columns for left alignment and center for center */
+
+.instant-brand-grid-row.vertical {
+  grid-template-rows: calc(var(--page_header_size) + var(--header_row_offset)) 1fr;
+}
+  
+/* Brand Block  - Holds Brand Items */
+
+/* Brand Items  - Holds Brand Image wrapper and Text */
+
+{% if img_to_small and bshowimages %}
+
+  .instant-brand-item.vertical {
+      grid-template-columns: min-content 1fr;
+  }
+
+    @media screen and (min-width: 500px) {  
+      .instant-brand-item.vertical.desk_center {
+        margin: auto;
+    }
+
+  }
+
+  @media screen and (max-width: 500px) {  
+
+    .instant-brand-item.vertical.mob_center {
+      margin: auto;
+    }
+
+  }
+{% endif %}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+{% if img_to_small %}
+  
+  .instant-brand-item-image-wrapper.vertical {
+    margin: auto;
+  } 
+{% endif %}
+
+
+</style> 
+
+
+{{ 'lfs-instant-brand-page-custom.css' | asset_url | stylesheet_tag }}    
+
+<div id="instant-brand-page">
+  {%  if display_index %}
+    {% render 'instant-brand-page-az' with my_vendor_array_sorted:my_vendor_array_sorted, excludedbrands_array:excludedbrands_array, desktop_alignment:desktop_alignment, mobile_alignment:mobile_alignment, consolidate_numbers:consolidate_numbers, consolidate_numbers_char:consolidate_numbers_char, numbers_array:numbers_array, index_long_link:index_long_link %}
+  {%  endif %}
+  
+  <div class="instant-brand-grid {{ brandformat }}">
+  {%  liquid
+    assign brand_count = 0
+    assign col_count = 0
+    assign row_count = 0
+  %}
+  {% for brand_string in my_vendor_array_sorted %}
+    {% assign brand_split = brand_string | split: '!**!' %}
+    {% assign brand = brand_split[1] %}
+    {% unless excludedbrands_array contains brand %}
+      {%  liquid
+        assign dbrand= brand | downcase
+        assign brand_handle =  dbrand | handleize
+        assign imgbrand= dbrand | md5
+      %}
+      {% if dbrand != lastbrand %}
+        {%  liquid
+          assign startingletter = brand_split[0]  | capitalize
+          assign brandencoded = brand | url_param_escape
+          assign brandencoded = brandencoded | replace: '+', '%2B'
+          assign brandhandle = dbrand | replace: " ", "-"
+          assign bCustNavLink = false
+          assign nocustombrand = true
+
+          if sort_order != ""
+            assign vendorurl = default_url_arr[0] | append: brandencoded | append: default_url_arr[1] | append: '&sort_by=' | append: sort_order
+          else
+            assign vendorurl = default_url_arr[0] | append: brandencoded | append: default_url_arr[1]
+          endif
+
+          if customimagebrands_array contains imgbrand
+            assign vendorimageurl = imgbrand | append: ".png" | prepend: 'ibp-' | asset_img_url : 'large'
+            assign nocustombrand = false
+          else
+            assign vendorimageurl = "ibp-no-image.png" | asset_img_url : 'large'
+          endif
+
+        if linkofinterest
+          assign link_lookup = linkofinterest
+        else
+          assign link_lookup = 'instant-brand-page-redirect-menu'
+        endif
+
+        for link in linklists[link_lookup].links
+          assign link_title = link.title | strip | downcase
+          if link_title == dbrand
+            assign vendorurl = link.url
+            assign bCustNavLink = true
+            if nocustombrand
+              assign blog_handle = vendorurl | split: '/blogs/' 
+              assign blog_post = articles[blog_handle[1]]
+
+              if blog_post.image
+                assign vendorimageurl = blog_post.image | image_url: width: 200
+                assign nocustombrand = false
+              endif
+            endif
+          endif
+        endfor
+
+        if bmatchcollectionURL
+          unless bCustNavLink
+            if collection_cache contains brand
+              if sort_order != ""
+                assign vendorurl = "/collections/" | append: brand_handle | append: '?sort_by=' | append: sort_order
+              else
+                assign vendorurl = "/collections/" | append: brand_handle
+              endif
+              assign bCustNavLink = true
+            endif
+          endunless
+
+          unless bCustNavLink
+            assign collectionofinterest = collections[brand_handle]
+            if collectionofinterest.handle != ''
+              if sort_order != ""
+                assign vendorurl = collectionofinterest.url | append: '?sort_by=' | append: sort_order
+              else
+                assign vendorurl = collectionofinterest.url
+              endif
+              assign bCustNavLink = true
+            endif
+
+            if bshowimages and nocustombrand
+              if collectionofinterest.image
+                assign vendorimageurl = collectionofinterest | image_url: width: 400
+              else
+                if collectionofinterest.products.first
+                  assign vendorimageurl = collectionofinterest.products.first | image_url: width: 400
+                endif
+              endif
+              assign nocustombrand = false
+            endif 
+          endunless
+
+          if bshowimages and nocustombrand
+            assign collectionofinterest = collections[brand_handle]
+            if collectionofinterest.handle != ''
+              if collectionofinterest.image
+                assign vendorimageurl = collectionofinterest | image_url: width: 400
+              else
+                if collectionofinterest.products.first
+                  assign vendorimageurl = collectionofinterest.products.first | image_url: width: 400
+                endif
+              endif
+            endif
+          endif 
+        endif
+           
+        if consolidate_numbers and numbers_array contains startingletter
+          assign startingletter = consolidate_numbers_char
+        endif
+          
+        assign startingbookmark = "<a name=" | append: "zz" | append: startingletter | append: ">" | append: startingletter | append: "</a>"
+        assign bBookmark = false    
+
+        assign sale_icon_display = 'none'
+        if my_vendor_sale_array_sorted contains brand
+          assign sale_icon_display = 'show'
+        endif
+      %}
+        {% if headerletter != startingletter %}
+          {% if brand_count == 0 %}
+            <div class="instant-brand-grid-column {{ brandformat }}">
+          {% elsif brand_count >= maxvendor %}
+            {% comment %} close off last row and column and start new column {% endcomment %}
+             {%  unless brandformat == 'catalogue' %}
+              </div></div>
+            {%  endunless %}
+            </div>
+            <div class="instant-brand-grid-column {{ brandformat }}">
+            {% assign brand_count = 0 %} 
+            {% assign row_count = 0 %} 
+          {% endif %}
+
+            
+          {%  unless brandformat == 'catalogue' %}
+            {% if row_count == 0 %}
+              <div class='instant-brand-grid-row {{ brandformat }} {{ desktop_alignment }} {{ mobile_alignment }}'>
+              <div class="instant-brand-block-header {{ brandformat }} {{ desktop_alignment }} {{ mobile_alignment }}">
+                <span>{{ headerstart }} {{ startingletter}} {{ headerend }}</span>
+                <span class="anchor">{{ startingbookmark }}</span>
+              </div>
+               <div class="instant-brand-block-brand {{ brandformat }}"> 
+            {% else %}  
+              </div></div>
+              <div class='instant-brand-grid-row {{ brandformat }} {{ desktop_alignment }} {{ mobile_alignment }}'>
+             <div class="instant-brand-block-header {{ brandformat }} {{ desktop_alignment }} {{ mobile_alignment }}">
+              <span>{{ headerstart }} {{ startingletter }} {{ headerend }}</span>
+               <span class="anchor">{{ startingbookmark }}</span>
+              </div>
+               <div class="instant-brand-block-brand {{ brandformat }}">   
+            {% endif %}  
+          {% else %}
+            {% assign bBookmark = true %} 
+            
+         {%  endunless %}
+         
+
+          {% assign row_count = row_count | plus: 1 %}    
+        {% endif %}
+        
+       {% render 'instant-brand-row-item' with brandformat:brandformat, brand_name:brand, desktop_alignment:desktop_alignment, mobile_alignment:mobile_alignment,vendorurl:vendorurl, vendorimageurl:vendorimageurl, startingbookmark:startingbookmark, bBookmark:bBookmark, salebanner:salebanner, sale_icon_display:sale_icon_display %}
+
+        {% assign brand_count = brand_count | plus: 1 %}
+        {% assign headerletter = startingletter %}
+      {% endif %}  {% comment %} end of the dbrand != lastbrand logic {% endcomment %}
+      {% assign lastbrand = dbrand %}
+      
+    {% endunless %}
+  {% endfor %}
+    {%  unless brandformat == 'catalogue' %}
+    </div></div>
+  {%  endunless %} {% comment %} close last instant-brand-grid-row {% endcomment %}
+   </div> {% comment %} close last instant-brand-grid-column {% endcomment %}
+  </div>
+</div>

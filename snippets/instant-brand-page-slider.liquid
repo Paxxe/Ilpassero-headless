@@ -1,0 +1,171 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.carousel.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/owl-carousel/1.3.3/owl.theme.min.css">
+
+{% include 'instant-brand-page-settings' %}
+
+{% liquid
+
+assign sort_order = ''
+assign default_url_arr = '/collections/vendors?q=%brand%' | split: '%brand%' 
+
+comment 
+  Start List
+endcomment
+
+assign my_favourite_vendor_array = shop.metafields.instant-brand-page.brand-list-settings.value.favourite_brand_list
+assign customimagebrands_array = shop.metafields.instant-brand-page.brand-list-settings.value.custom_images
+assign excludedbrands_array = shop.metafields.instant-brand-page.brand-list-settings.value.excluded_brand_list
+
+unless outofstockvendors  
+  assign instock_cache = shop.metafields.instant-brand-page.brand-instock.value
+endunless
+
+if bmatchcollectionURL
+  assign collection_cache = shop.metafields.instant-brand-page.brand-collections.value
+endif
+
+if collofinterest
+	for vendor in collections[collofinterest].all_vendors
+		if my_favourite_vendor_array contains vendor
+			assign coll_vendorlist = coll_vendorlist | append: vendor | append: "**"
+		endif
+	endfor
+	assign my_favourite_vendor_array = coll_vendorlist | split: '**'
+endif
+
+if linkofinterest
+	assign link_lookup = linkofinterest
+	for vendor in linklists[link_lookup].links
+		if my_favourite_vendor_array contains vendor.title
+			assign coll_vendorlist = coll_vendorlist | append: vendor.title | append: "**"
+		endif
+	endfor
+	assign my_favourite_vendor_array = coll_vendorlist | split: '**'
+endif
+
+%}
+
+<style>
+
+  :root {
+    --slider_item_padding: 20px; 
+
+  }
+
+  .brand-slider-item {
+    padding-left: var(--slider_item_padding);
+    padding-right: var(--slider_item_padding);
+  }
+
+  @media screen and (max-width: 800px){
+      .brand-slider-item {
+      padding-left: calc(var(--slider_item_padding) * 3);
+      padding-right: calc(var(--slider_item_padding) * 3);
+  }
+
+  @media screen and (max-width: 500px) {  
+
+    .brand-slider-item {
+      padding-left: calc(var(--slider_item_padding) * 5);
+      padding-right: calc(var(--slider_item_padding) * 5);
+    }
+
+  }
+
+</style>
+
+{% if my_favourite_vendor_array.size > 0 %}
+
+	{{ 'lfs-instant-brand-page.css' | asset_url | stylesheet_tag }}
+	{{ 'lfs-instant-brand-slider-custom.css' | asset_url | stylesheet_tag }}    
+		
+	<div id="instant_brand_slider_header" style="display: none">{{ sliderheader }}</div>
+	<div id="instant_brand_slider" class="owl-carousel owl-centered">
+        
+           {% for brand in my_favourite_vendor_array  %} 
+            {% liquid 
+                assign brand_add = brand | split: '!*:::::::::*!'
+                unless outofstockvendors
+                  unless instock_cache contains brand
+                    assign excludedbrands_array = excludedbrands_array | concat: brand_add
+                  endunless
+                endunless
+            %}
+             {% unless  excludedbrands_array contains brand %} 
+
+            {% liquid
+                assign dbrand = brand | downcase
+                assign brandencoded = brand | url_param_escape
+                assign imgbrand = dbrand | md5
+                assign brand_handle =  dbrand | handleize
+                assign nocustombrand = true
+                assign bCustNavLink = false
+
+                if sort_order != ""
+                  assign vendorurl = default_url_arr[0] | append: brandencoded | append: default_url_arr[1] | append: '&sort_by=' | append: sort_order
+                else
+                  assign vendorurl = default_url_arr[0] | append: brandencoded | append: default_url_arr[1]
+                endif
+
+                if customimagebrands_array contains imgbrand
+                  assign vendorimageurl = imgbrand | append: ".png" | prepend: 'ibp-' | asset_img_url : '200x'
+                  assign nocustombrand = false
+                else
+                  assign vendorimageurl = "ibp-no-image.png" | asset_img_url : '200x' 
+                endif
+
+                if linkofinterest
+                    assign link_lookup = linkofinterest
+                else
+                    assign link_lookup = 'instant-brand-page-redirect-menu'
+                endif
+
+                for link in linklists[link_lookup].links
+                  if link.title  == brand
+                    assign vendorurl = link.url
+                    assign bCustNavLink = true
+                  endif
+                endfor
+
+                if bmatchcollectionURL
+                  if collection_cache contains brand
+                    if sort_order != ""
+                      assign vendorurl = "/collections/" | append: brand_handle | append: '?sort_by=' | append: sort_order
+                    else
+                      assign vendorurl = "/collections/" | append: brand_handle
+                    endif
+                    assign bCustNavLink = true
+                  endif
+                  unless bCustNavLink
+                    assign collectionofinterest = collections[brand_handle] 
+                    if collectionofinterest.handle != ''
+                      if bmatchcollectionURL
+                        assign vendorurl = collectionofinterest.url
+                      endif
+
+                      if nocustombrand
+                        if collectionofinterest.image
+                          assign vendorimageurl = collectionofinterest | img_url : '200x'
+                        else
+                          assign vendorimageurl = collectionofinterest.products.first | img_url : '200x'
+                        endif
+                      endif
+                    endif
+                  endunless
+                endif
+          %}
+
+          <div class="brand-slider-item">
+            <div class="brand-slider-image-wrapper">
+            <a href="{{ vendorurl }}" ><img class="brand-slider-image" src="{{ vendorimageurl }}" alt=" {{ brand }}" nopin="true" /></a>
+            </div>  
+            {% if sliderincludetext %}
+             <div>  
+              <h5 class="brand-slider-text"><a style="border-bottom : 0px;" class="brand-slider-link" href="{{ vendorurl }}">{{ brand }}</a></h5>
+             </div>  
+            {% endif %}
+          </div>
+        {% endunless %}
+        {% endfor %}
+	</div>
+{% endif %}

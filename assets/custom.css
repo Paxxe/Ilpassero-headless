@@ -1,0 +1,34 @@
+
+
+
+
+
+
+.prod__compare_price,
+.text-color-regular-price{
+  font-size:12px;
+}
+
+.product-template{
+  margin-top:20px;
+}
+
+.main-product__blocks .prod__compare_price,
+.main-product__blocks  .text-color-regular-price{
+  font-size:15px;
+}
+.prod__tag-hot{
+  border-radius:0px;
+}
+
+
+.sf__pcard-tags{
+  flex-direction: column;
+}
+
+
+@media (min-width: 1024px) {
+  .lg\:text-\[42px\]{
+    font-size:29px;
+  }
+}

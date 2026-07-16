@@ -1,0 +1,656 @@
+/* // Variables // */
+
+:root {
+  --col_gap: 1.25em;  
+  --row_gap: 1.25em;
+  --grid_col_gap: 1em;  
+  --grid_row_gap: 1em;
+  --row_col_gap: 1em;  
+  --row_row_gap: 1em;
+  --block_row_gap: 0.5em; 
+  --block_col_gap: 0.5em;  
+  --brand_row_gap: 0.5em; 
+  --brand_col_gap: 0.5em; 
+  --text_row_gap: 0.25em; 
+
+  --header_row_offset: 12px;  
+  --header_col_offset: 80px;  
+
+}
+
+/* // AZ links // */
+
+.instant-brand-az {
+  display:flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  word-break: break-word;
+  width : 100%; 
+  border : 0px; 
+  border-collapse: collapse; 
+  margin-bottom: 36px; 
+  margin-top: 16px;
+}
+
+.instant-brand-az.none {
+  display: none;
+}
+
+.instant-brand-az.square {
+  column-gap: 0px;
+}
+
+.instant-brand-az.round {
+  column-gap: 0px;
+}
+ 
+/* AZ Items */
+
+a.instant-brand-letter {
+  width: 100%;
+  display: flex !important;
+  justify-content: center;
+  font-weight: bold;
+}
+  
+.instant-brand-az.standard .az-item {
+  border-radius: 4px;
+} 
+
+.instant-brand-az.square .az-item {
+  text-decoration: none;
+} 
+
+.instant-brand-az.round .az-item {
+  border-radius: 50%;
+  text-decoration: none;
+}   
+
+.instant-brand-az.square a.instant-brand-letter, .instant-brand-az.square a.instant-brand-letter:visited {
+  text-decoration: none;
+} 
+
+.instant-brand-az.round a.instant-brand-letter, .instant-brand-az.round a.instant-brand-letter:visited {
+  text-decoration: none;
+} 
+
+/* // General Page // */
+
+/* rte formating fixes */
+
+.rte a:not(.image-link)::after, .rte-setting a:not(.image-link)::after, .text-link:not(.image-link)::after {
+    border-bottom: 0px;} 
+.rte a:not(.btn) {
+    border-bottom: 0px solid currentColor;
+}
+.rte a:not(.button) {
+	text-decoration: none;
+}
+
+/* anchor links */
+
+span.anchor { 
+  display: block; 
+  height: 160px; /*same height as header*/ 
+  margin-top: -160px; /*same height as header*/ 
+  visibility: hidden !important; 
+} 
+
+/* General Helpers */
+
+.opacity-03 {
+  opacity: 0.3;  
+}
+
+/* Page */
+ 
+#instant-brand-page {
+  width : 100%; 
+  border : 0px; 
+  background-color: inherit;
+  display: none;
+  margin-bottom: 40px;
+}
+
+@media screen and (max-width: 500px) {
+  
+  #instant-brand-page {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  
+}
+
+/* ///// Catalogue Template ///// */    
+/* Page Brand Grid */
+
+.instant-brand-grid.catalogue {
+  grid-template-columns: 1fr;
+}  
+
+/* Brand Grid Column - Contains Rows - auto fill column */
+
+.instant-brand-grid-column.catalogue {
+  grid-column-gap: var(--row_col_gap);
+  grid-row-gap: var(--row_row_gap);
+}
+
+/* Brand Items  - Holds Brand Image wrapper and Text - remove Grid */
+
+.instant-brand-item.catalogue {
+    grid-row-gap: unset;
+    display: unset;
+    grid-column-gap: unset;
+    position: relative;
+}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+@media screen and (max-width: 500px) {  
+
+  .instant-brand-item-image-wrapper.catalogue.mob_center {
+  margin: auto;
+  }
+
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-item-image-wrapper.catalogue.desk_center {
+    margin: auto;
+  }
+
+}
+  
+/* Brand Text - Holds Brand Name text link and sale icon */
+
+.instant-brand-item-text.catalogue .instant-brand-text-link {
+  margin-top: 0.25em;
+}
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-item-text.catalogue.mob_left a.instant-brand-text-link {
+    justify-content: left;
+  }
+
+  .instant-brand-item-text.catalogue.mob_center a.instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-item-text.catalogue.desk_left .instant-brand-text-link {
+    justify-content: left;
+  }
+  .instant-brand-item-text.catalogue.desk_center .instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+  }
+
+}
+
+/* ///// List Template ///// */
+/* Page Brand Grid - Contains Columns - 1 column */
+
+.instant-brand-grid.list {
+  grid-template-columns: 1fr;
+}  
+
+/* Brand Grid Column - Contains Rows - 1 column */
+
+.instant-brand-grid-column.list {
+  grid-template-columns: 1fr;
+}
+
+/* Brand Column Row - Contains Header and Blocks. Split columns for left alignment and center for center */
+
+.instant-brand-grid-row.list {
+    padding-top: var(--row_row_gap);
+}
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-grid-row.list.mob_left {
+    grid-template-columns: 1fr;
+  }
+
+  .instant-brand-grid-row.list.mob_center {
+    grid-template-columns: 1fr;
+  }
+}
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-grid-row.list.desk_left {
+      grid-template-columns: var(--header_col_offset) 1fr;
+  }
+
+  .instant-brand-grid-row.list.desk_center {
+    grid-template-columns: var(--header_col_offset) 1fr;
+  }
+
+}
+
+/* Brand Block Header - Holds Header Letter  */
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-block-header.list.mob_center {
+    text-align: center;
+  }
+
+  .instant-brand-block-header.list.mob_left {
+    text-align: left;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-block-header.list.desk_left {
+      text-align: left;
+  }
+
+  .instant-brand-block-header.list.desk_center {
+    text-align: center;
+  }
+
+}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+@media screen and (max-width: 500px) {  
+
+  .instant-brand-item-image-wrapper.list.mob_center {
+      margin: auto;
+  }
+
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-item-image-wrapper.list.desk_center {
+      margin: auto;
+  }
+
+}
+
+/* Brand Text - Holds Brand Name text link and sale icon */
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-item-text.list.mob_left a.instant-brand-text-link {
+    justify-content: left;
+  }
+
+  .instant-brand-item-text.list.mob_center a.instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+    position: inherit;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-item-text.list.desk_left .instant-brand-text-link {
+    justify-content: left;
+  }
+  .instant-brand-item-text.list.desk_center .instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+  }
+
+}
+
+/* ///// Horizontal Template ///// */
+/* Page Brand Grid - Contains Columns - 1 column */
+
+.instant-brand-grid.horizontal {
+  grid-template-columns: 1fr;
+}  
+
+/* Brand Grid Column - Contains Rows - 1 column */
+
+.instant-brand-grid-column.horizontal {
+  grid-template-columns: 1fr;
+}
+
+/* Brand Column Row - Contains Header and Blocks. Split columns for left alignment and center for center */
+
+.instant-brand-grid-row.horizontal {
+    padding-top: var(--row_row_gap);
+}
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-grid-row.horizontal.mob_left {
+      grid-template-columns: 1fr;
+  }
+
+  .instant-brand-grid-row.horizontal.mob_center {
+      grid-template-columns:  1fr;
+  }
+}
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-grid-row.horizontal.desk_left {
+      grid-template-columns: var(--header_col_offset) 1fr;
+  }
+
+  .instant-brand-grid-row.horizontal.desk_center {
+    grid-template-columns: var(--header_col_offset) 1fr;
+  }
+
+}
+
+/* Brand Block Header - Holds Header Letter  */
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-block-header.horizontal.mob_center {
+    text-align: center;
+  }
+
+  .instant-brand-block-header.horizontal.mob_left {
+    text-align: left;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-block-header.horizontal.desk_left {
+      text-align: left;
+  }
+
+  .instant-brand-block-header.horizontal.desk_center {
+    text-align: center;
+  }
+
+}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+
+@media screen and (min-width: 500px) {    
+
+  .instant-brand-item-image-wrapper.horizontal.desk_center {
+      margin: auto;
+  }
+
+} 
+
+@media screen and (max-width: 500px) {    
+
+  .instant-brand-item-image-wrapper.horizontal.mob_center {
+      margin: auto;
+  }
+
+} 
+
+/* Brand Text - Holds Brand Name text link and sale icon */
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-item-text.horizontal.mob_left a.instant-brand-text-link {
+    justify-content: left;
+  }
+
+  .instant-brand-item-text.horizontal.mob_center a.instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+    position: inherit;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-item-text.horizontal.desk_left .instant-brand-text-link {
+    justify-content: left;
+  }
+  .instant-brand-item-text.horizontal.desk_center .instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+  }
+
+}
+
+/* ///// Page Template ///// */    
+/* Page Brand Grid - Contains Columns - 1 column */
+
+.instant-brand-grid.page_vert {
+  grid-template-columns: 1fr;
+}  
+
+.instant-brand-grid-column.page_vert {
+  grid-row-gap: 3em;
+}
+
+/* Brand Block Header - Holds Header Letter  */
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-block-header.page_vert.mob_center {
+    text-align: center;
+  }
+
+  .instant-brand-block-header.page_vert.mob_left {
+    text-align: left;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-block-header.page_vert.desk_left {
+      text-align: left;
+  }
+
+  .instant-brand-block-header.page_vert.desk_center {
+    text-align: center;
+  }
+
+}
+
+.instant-brand-block-brand.page_vert {
+    grid-auto-rows: max-content;
+}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+@media screen and (min-width: 500px) {    
+
+  .instant-brand-item-image-wrapper.page_vert.desk_center {
+      margin: auto;
+  }
+
+} 
+
+@media screen and (max-width: 500px) {    
+
+  .instant-brand-item-image-wrapper.page_vert.mob_center {
+      margin: auto;
+  }
+
+} 
+
+/* Brand Text - Holds Brand Name text link and sale icon */
+
+  .instant-brand-item-text.page_vert a.instant-brand-text-link {
+    word-break: break-word;
+  }
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-item-text.page_vert.mob_left a.instant-brand-text-link {
+    justify-content: left;
+  }
+
+  .instant-brand-item-text.page_vert.mob_center a.instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+    position: inherit;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-item-text.page_vert.desk_left .instant-brand-text-link {
+    justify-content: left;
+  }
+  .instant-brand-item-text.page_vert.desk_center .instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+  }
+
+}
+
+/* ///// Vertical Template ///// */
+/* Brand Grid Column - Contains Rows - 1 column */
+
+.instant-brand-grid-column.vertical {
+  grid-template-columns: 1fr;
+  grid-auto-rows: min-content;
+  grid-row-gap: 3em;
+}
+
+/* Brand Block Header - Holds Header Letter  */
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-block-header.vertical.mob_center {
+    text-align: center;
+  }
+
+  .instant-brand-block-header.vertical.mob_left {
+    text-align: left;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-block-header.vertical.desk_left {
+      text-align: left;
+  }
+
+  .instant-brand-block-header.vertical.desk_center {
+    text-align: center;
+  }
+
+}
+
+.instant-brand-block-brand.vertical {
+    grid-auto-rows: max-content;
+}
+
+/* Brand Image Wrapper  - Holds image link and sale icon */
+
+@media screen and (min-width: 500px) {    
+
+  .instant-brand-item-image-wrapper.vertical.desk_center {
+      margin: auto;
+  }
+
+} 
+
+@media screen and (max-width: 500px) {    
+
+  .instant-brand-item-image-wrapper.vertical.mob_center {
+      margin: auto;
+  }
+
+} 
+
+/* Brand Text - Holds Brand Name text link and sale icon */
+
+.instant-brand-item-text.vertical a.instant-brand-text-link {
+  word-break: break-word;
+}
+
+@media screen and (max-width: 500px) {  
+  .instant-brand-item-text.vertical.mob_left a.instant-brand-text-link {
+    justify-content: left;
+  }
+
+  .instant-brand-item-text.vertical.mob_center a.instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+    position: inherit;
+  }
+}
+
+@media screen and (min-width: 500px) {  
+
+  .instant-brand-item-text.vertical.desk_left .instant-brand-text-link {
+    justify-content: left;
+  }
+  .instant-brand-item-text.vertical.desk_center .instant-brand-text-link {
+    justify-content: center;
+    text-align: center;
+  }
+
+}
+
+/* ///// Slider ///// */
+
+.owl-theme .owl-controls .owl-page span {
+  background: 0 0;
+  border: 2px solid #685858;
+  width: 10px;
+  height: 10px;
+  display: block;
+  border-radius: 100%;
+  margin: 0 4px;
+}
+
+  .owl-theme .owl-controls .owl-page.active span {
+  background: #685858;
+  border-color: #685858;
+}
+
+.owl-theme .owl-controls {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.owl-carousel .owl-item a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.owl-carousel .owl-item a:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+.owl-carousel .owl-item a::after {
+  border-bottom: 0px;
+}
+
+.brand-slider-item {
+  display: grid;
+  grid-row-gap: 0.5em;
+}
+
+.brand-slider-image-wrapper {
+  position: relative;
+  margin: 0.5em;
+}
+
+.brand-slider-image-wrapper a {
+  position: unset;
+  display: flex;
+}
+
+.brand-slider-image-wrapper:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+
+.brand-slider-image-wrapper img {
+  position: absolute;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0px;
+  box-shadow: unset !important;
+  margin-bottom: 0px !important;
+  object-fit: contain;
+}
+  
+
+.brand-slider-text {
+  display: flex;
+  justify-content: center;
+  margin: 0px !important;
+  padding: 0px;
+  text-align: center;
+}  

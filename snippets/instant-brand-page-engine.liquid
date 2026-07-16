@@ -1,0 +1,91 @@
+
+
+{% liquid 
+
+capture version_render
+  render 'instant-brand-page-version'
+endcapture
+
+assign customimagebrands_array = shop.metafields.instant-brand-page.brand-list-settings.value.custom_images
+assign excludedbrands_array = shop.metafields.instant-brand-page.brand-list-settings.value.excluded_brand_list 
+assign notificationbrands_array = shop.metafields.instant-brand-page.brand-list-settings.value.tagged_brand_list 
+
+if bshowsale   
+  for sale_item in shop.metafields.instant-brand-page.brand-sale.value
+     assign notificationbrands_array = notificationbrands_array | concat: sale_item
+  endfor 
+endif 
+unless outofstockvendors  
+  assign instock_cache = shop.metafields.instant-brand-page.brand-instock.value
+endunless
+
+if bmatchcollectionURL
+  assign collection_cache = shop.metafields.instant-brand-page.brand-collections.value
+endif
+  
+assign fullvendorlist = ""
+
+if linkofinterest
+  for link in linklists[linkofinterest].links
+    assign brand_add = link.title | split: '!*:::::::::*!'
+    unless outofstockvendors
+      unless instock_cache contains link.title
+        assign excludedbrands_array = excludedbrands_array | concat: brand_add
+      endunless
+    endunless 
+    assign brand_pref = link.title | handleize | slice: 0   | append: '!**!' | append: link.title
+    assign fullvendorlist = fullvendorlist | append: brand_pref | append: "/**/"
+  endfor
+else 
+  for link in linklists.instant-brand-page-redirect-menu.links
+    assign brand_add = link.title | split: '!*:::::::::*!'
+    unless outofstockvendors
+      unless instock_cache contains link.title
+        assign excludedbrands_array = excludedbrands_array | concat: brand_add
+      endunless
+    endunless 
+    assign brand_pref = link.title  | handleize | slice: 0 | append: '!**!' | append: link.title
+    assign fullvendorlist = fullvendorlist | append: brand_pref | append: "/**/"
+  endfor
+endif
+
+if collofinterest
+  for vendor in collections[collofinterest].all_vendors
+    assign brand_add = vendor | split: '!*:::::::::*!'
+    unless outofstockvendors
+      unless instock_cache contains vendor
+        assign excludedbrands_array = excludedbrands_array | concat: brand_add
+      endunless
+    endunless 
+    assign brand_pref = vendor  | handleize | slice: 0 | append: '!**!' | append: vendor
+    assign fullvendorlist = fullvendorlist | append: brand_pref | append: "/**/"
+  endfor
+else
+  for vendor in shop.vendors
+    assign brand_add = vendor | split: '!*:::::::::*!'
+    unless outofstockvendors
+      unless instock_cache contains vendor
+        assign excludedbrands_array = excludedbrands_array | concat: brand_add
+      endunless
+    endunless 
+    assign brand_pref = vendor  | handleize | slice: 0 | append: '!**!' | append: vendor
+    assign fullvendorlist = fullvendorlist | append: brand_pref | append: "/**/"
+  endfor
+endif
+
+assign my_vendor_array = fullvendorlist | split: "/**/"
+assign my_vendor_array_sorted =  my_vendor_array | sort_natural | uniq
+assign myvendorsize = my_vendor_array_sorted | size
+
+assign my_vendor_sale_array = notificationbrands_array
+assign my_vendor_sale_array_sorted =  my_vendor_sale_array | sort_natural | uniq
+
+assign myexcsize = excludedbrands_array.size
+
+assign myTotalVendors = myvendorsize | minus: myexcsize 
+assign maxvendor = myTotalVendors | divided_by: pagecolumns | ceil
+assign maxvendor = maxvendor | plus: 1
+
+%}
+
+<!-- IB: {{ version_render }} -->
