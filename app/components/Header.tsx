@@ -7,6 +7,7 @@ import {
 } from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
+import {resolveMenuUrl} from '~/lib/menu-url';
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -55,12 +56,7 @@ export function HeaderMenu({
   const {close} = useAside();
   const items = (menu || FALLBACK_HEADER_MENU).items;
 
-  const getUrl = (url: string) =>
-    url.includes('myshopify.com') ||
-    url.includes(publicStoreDomain) ||
-    url.includes(primaryDomainUrl)
-      ? new URL(url).pathname
-      : url;
+  const domains = {publicStoreDomain, primaryDomainUrl};
 
   return (
     <nav className={className} role="navigation">
@@ -78,7 +74,8 @@ export function HeaderMenu({
       {items.map((item) => {
         if (!item.url) return null;
 
-        const url = getUrl(item.url);
+        const destination = resolveMenuUrl(item, domains);
+        if (!destination) return null;
         const children = item.items ?? [];
 
         return (
@@ -89,7 +86,7 @@ export function HeaderMenu({
               onClick={close}
               prefetch="intent"
               style={activeLinkStyle}
-              to={url}
+              to={destination.href}
             >
               {item.title}
             </NavLink>
@@ -99,19 +96,23 @@ export function HeaderMenu({
                   {children.map((child) => (
                     <section className="mega-menu__column" key={child.id}>
                       {child.url ? (
-                        <NavLink className="mega-menu__heading" onClick={close} prefetch="intent" to={getUrl(child.url)}>
-                          {child.title}
-                        </NavLink>
+                        (() => {
+                          const destination = resolveMenuUrl(child, domains);
+                          if (!destination) return null;
+                          return destination.external ? (
+                            <a className="mega-menu__heading" href={destination.href} key={child.id} rel="noopener noreferrer" target="_blank">{child.title}</a>
+                          ) : (
+                            <NavLink className="mega-menu__heading" onClick={close} prefetch="intent" to={destination.href}>{child.title}</NavLink>
+                          );
+                        })()
                       ) : <h3 className="mega-menu__heading">{child.title}</h3>}
                       {child.items?.length ? (
                         <ul>
-                          {child.items.map((grandchild) => grandchild.url ? (
-                            <li key={grandchild.id}>
-                              <NavLink className="mega-menu__item" onClick={close} prefetch="intent" to={getUrl(grandchild.url)}>
-                                {grandchild.title}
-                              </NavLink>
-                            </li>
-                          ) : null)}
+                          {child.items.map((grandchild) => {
+                            const destination = resolveMenuUrl(grandchild, domains);
+                            if (!destination) return null;
+                            return <li key={grandchild.id}>{destination.external ? <a className="mega-menu__item" href={destination.href} rel="noopener noreferrer" target="_blank">{grandchild.title}</a> : <NavLink className="mega-menu__item" onClick={close} prefetch="intent" to={destination.href}>{grandchild.title}</NavLink>}</li>;
+                          })}
                         </ul>
                       ) : null}
                     </section>

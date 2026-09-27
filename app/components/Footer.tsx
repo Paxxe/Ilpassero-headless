@@ -1,6 +1,7 @@
 import {Suspense} from 'react';
 import {Await, NavLink} from 'react-router';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
+import {resolveMenuUrl} from '~/lib/menu-url';
 
 interface FooterProps {
   footer: Promise<FooterQuery | null>;
@@ -48,24 +49,17 @@ function FooterMenu({
   return (
     <nav className="footer-menu" role="navigation" aria-label="Footer">
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
-        if (!item.url) return null;
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
-        const isExternal = !url.startsWith('/');
+        const destination = resolveMenuUrl(item, {publicStoreDomain, primaryDomainUrl});
+        if (!destination) return null;
         return (
           <section className="footer-menu__column" key={item.id}>
-            {isExternal ? <a className="footer-menu__heading" href={url} rel="noopener noreferrer" target="_blank">{item.title}</a> : <NavLink className="footer-menu__heading" end prefetch="intent" style={activeLinkStyle} to={url}>{item.title}</NavLink>}
+            {destination.external ? <a className="footer-menu__heading" href={destination.href} rel="noopener noreferrer" target="_blank">{item.title}</a> : <NavLink className="footer-menu__heading" end prefetch="intent" style={activeLinkStyle} to={destination.href}>{item.title}</NavLink>}
             {item.items?.length ? (
               <ul>
                 {item.items.map((child) => {
-                  if (!child.url) return null;
-                  const childUrl = child.url.includes('myshopify.com') || child.url.includes(publicStoreDomain) || child.url.includes(primaryDomainUrl) ? new URL(child.url).pathname : child.url;
-                  return <li key={child.id}><NavLink end prefetch="intent" style={activeLinkStyle} to={childUrl}>{child.title}</NavLink></li>;
+                  const childDestination = resolveMenuUrl(child, {publicStoreDomain, primaryDomainUrl});
+                  if (!childDestination) return null;
+                  return <li key={child.id}>{childDestination.external ? <a href={childDestination.href} rel="noopener noreferrer" target="_blank">{child.title}</a> : <NavLink end prefetch="intent" style={activeLinkStyle} to={childDestination.href}>{child.title}</NavLink>}</li>;
                 })}
               </ul>
             ) : null}
