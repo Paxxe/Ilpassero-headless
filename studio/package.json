@@ -1,0 +1,16 @@
+{
+  "name": "passero-sanity-studio",
+  "private": true,
+  "scripts": {
+    "dev": "sanity dev --host 0.0.0.0",
+    "build": "sanity build",
+    "deploy": "sanity deploy"
+  },
+  "dependencies": {
+    "@sanity/vision": "^6.16.0",
+    "sanity": "^6.16.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

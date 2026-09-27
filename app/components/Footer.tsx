@@ -25,6 +25,10 @@ export function Footer({
                 publicStoreDomain={publicStoreDomain}
               />
             )}
+            <div className="footer-bottom">
+              <span>Il Passero</span>
+              <span>© {new Date().getFullYear()} Il Passero</span>
+            </div>
           </footer>
         )}
       </Await>
@@ -42,7 +46,7 @@ function FooterMenu({
   publicStoreDomain: string;
 }) {
   return (
-    <nav className="footer-menu" role="navigation">
+    <nav className="footer-menu" role="navigation" aria-label="Footer">
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
@@ -53,20 +57,19 @@ function FooterMenu({
             ? new URL(item.url).pathname
             : item.url;
         const isExternal = !url.startsWith('/');
-        return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
-            {item.title}
-          </a>
-        ) : (
-          <NavLink
-            end
-            key={item.id}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
-          </NavLink>
+        return (
+          <section className="footer-menu__column" key={item.id}>
+            {isExternal ? <a className="footer-menu__heading" href={url} rel="noopener noreferrer" target="_blank">{item.title}</a> : <NavLink className="footer-menu__heading" end prefetch="intent" style={activeLinkStyle} to={url}>{item.title}</NavLink>}
+            {item.items?.length ? (
+              <ul>
+                {item.items.map((child) => {
+                  if (!child.url) return null;
+                  const childUrl = child.url.includes('myshopify.com') || child.url.includes(publicStoreDomain) || child.url.includes(primaryDomainUrl) ? new URL(child.url).pathname : child.url;
+                  return <li key={child.id}><NavLink end prefetch="intent" style={activeLinkStyle} to={childUrl}>{child.title}</NavLink></li>;
+                })}
+              </ul>
+            ) : null}
+          </section>
         );
       })}
     </nav>

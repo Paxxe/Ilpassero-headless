@@ -53,6 +53,14 @@ export function HeaderMenu({
 }) {
   const className = `header-menu-${viewport}`;
   const {close} = useAside();
+  const items = (menu || FALLBACK_HEADER_MENU).items;
+
+  const getUrl = (url: string) =>
+    url.includes('myshopify.com') ||
+    url.includes(publicStoreDomain) ||
+    url.includes(primaryDomainUrl)
+      ? new URL(url).pathname
+      : url;
 
   return (
     <nav className={className} role="navigation">
@@ -67,28 +75,51 @@ export function HeaderMenu({
           Home
         </NavLink>
       )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+      {items.map((item) => {
         if (!item.url) return null;
 
-        // if the url is internal, we strip the domain
-        const url =
-          item.url.includes('myshopify.com') ||
-          item.url.includes(publicStoreDomain) ||
-          item.url.includes(primaryDomainUrl)
-            ? new URL(item.url).pathname
-            : item.url;
+        const url = getUrl(item.url);
+        const children = item.items ?? [];
+
         return (
-          <NavLink
-            className="header-menu-item"
-            end
-            key={item.id}
-            onClick={close}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
-            {item.title}
-          </NavLink>
+          <div className="header-menu-group" key={item.id}>
+            <NavLink
+              className="header-menu-item header-menu-item-parent"
+              end={!children.length}
+              onClick={close}
+              prefetch="intent"
+              style={activeLinkStyle}
+              to={url}
+            >
+              {item.title}
+            </NavLink>
+            {children.length ? (
+              <div className="mega-menu" role="region" aria-label={`${item.title} menu`}>
+                <div className="mega-menu__inner">
+                  {children.map((child) => (
+                    <section className="mega-menu__column" key={child.id}>
+                      {child.url ? (
+                        <NavLink className="mega-menu__heading" onClick={close} prefetch="intent" to={getUrl(child.url)}>
+                          {child.title}
+                        </NavLink>
+                      ) : <h3 className="mega-menu__heading">{child.title}</h3>}
+                      {child.items?.length ? (
+                        <ul>
+                          {child.items.map((grandchild) => grandchild.url ? (
+                            <li key={grandchild.id}>
+                              <NavLink className="mega-menu__item" onClick={close} prefetch="intent" to={getUrl(grandchild.url)}>
+                                {grandchild.title}
+                              </NavLink>
+                            </li>
+                          ) : null)}
+                        </ul>
+                      ) : null}
+                    </section>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
         );
       })}
     </nav>

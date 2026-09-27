@@ -10,6 +10,8 @@ import {ProductItem} from '~/components/ProductItem';
 import {MockShopNotice} from '~/components/MockShopNotice';
 import {StoryblokPage} from '~/components/storyblok/StoryblokPage';
 import {getStoryblokStory, type StoryblokBlock} from '~/lib/storyblok.server';
+import {SanityPageBuilder, type ResolvedSection} from '~/components/sanity/SanityPageBuilder';
+import {getSanityPage, type SanityCarouselSection} from '~/lib/sanity.server';
 
 export const meta: Route.MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -30,19 +32,41 @@ export async function loader(args: Route.LoaderArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}, story] = await Promise.all([
+  const [{collections}, storyblokStory, sanityPage] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
     getStoryblokStory(
       'home',
       context.env.STORYBLOK_ACCESS_TOKEN,
       context.env.STORYBLOK_VERSION || 'draft',
     ),
+    getSanityPage('home', context.env.PUBLIC_SANITY_PROJECT_ID, context.env.PUBLIC_SANITY_DATASET),
   ]);
+
+  const sanitySections: ResolvedSection[] = sanityPage
+    ? await Promise.all(sanityPage.sections.map(async (section) => {
+        if (section._type === 'collectionCarouselSection') {
+          const result = await context.storefront.query(COLLECTION_CAROUSEL_QUERY, {
+            variables: {handle: section.collectionHandle || '', first: Math.min(section.limit || 8, 20)},
+          });
+          return {section, products: result.collection?.products.nodes || []};
+        }
+        if (section._type === 'productCarouselSection') {
+          const products = await Promise.all((section.productHandles || []).map(async (handle) => {
+            const result = await context.storefront.query(PRODUCT_BY_HANDLE_QUERY, {variables: {handle}});
+            return result.product;
+          }));
+          return {section, products: products.filter(Boolean)};
+        }
+        return {section};
+      }))
+    : [];
 
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     featuredCollection: collections.nodes[0],
-    story,
+    storyblokStory,
+    sanityPage,
+    sanitySections,
   };
 }
 
@@ -67,8 +91,11 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
-  const body = data.story?.content.body;
-  if (data.story && Array.isArray(body)) {
+  if (data.sanityPage) {
+    return <SanityPageBuilder sections={data.sanitySections} />;
+  }
+  const body = data.storyblokStory?.content.body;
+  if (data.storyblokStory && Array.isArray(body)) {
     return <StoryblokPage blocks={body as StoryblokBlock[]} />;
   }
 
@@ -185,5 +212,33 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
         ...RecommendedProduct
       }
     }
+  }
+` as const;
+
+const CAROUSEL_PRODUCT_FRAGMENT = `#graphql
+  fragment SanityCarouselProduct on Product {
+    id
+    handle
+    title
+    featuredImage { url altText width height }
+    priceRange { minVariantPrice { amount currencyCode } }
+  }
+` as const;
+
+const COLLECTION_CAROUSEL_QUERY = `#graphql
+  ${CAROUSEL_PRODUCT_FRAGMENT}
+  query SanityCollectionCarousel($handle: String!, $first: Int!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collection(handle: $handle) {
+      products(first: $first) { nodes { ...SanityCarouselProduct } }
+    }
+  }
+` as const;
+
+const PRODUCT_BY_HANDLE_QUERY = `#graphql
+  ${CAROUSEL_PRODUCT_FRAGMENT}
+  query SanitySelectedProduct($handle: String!, $country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    product(handle: $handle) { ...SanityCarouselProduct }
   }
 ` as const;

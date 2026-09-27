@@ -10,11 +10,17 @@
     "preview": "shopify hydrogen preview --build",
     "lint": "eslint --no-error-on-unmatched-pattern .",
     "typecheck": "react-router typegen && tsc --noEmit",
-    "codegen": "shopify hydrogen codegen && react-router typegen"
+    "codegen": "shopify hydrogen codegen && react-router typegen",
+    "studio:dev": "npm --prefix studio run dev",
+    "studio:build": "npm --prefix studio run build",
+    "studio:deploy": "npm --prefix studio run deploy"
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
     "@shopify/hydrogen": "2026.4.5",
+    "@portabletext/react": "^8.0.1",
+    "@sanity/client": "^8.7.0",
+    "@sanity/image-url": "^2.1.1",
     "@storyblok/preview-bridge": "^2.3.1",
     "@storyblok/react": "^7.3.1",
     "@storyblok/richtext": "^5.3.2",

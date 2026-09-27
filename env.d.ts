@@ -10,5 +10,7 @@ declare global {
 	interface Env {
 		STORYBLOK_ACCESS_TOKEN?: string;
 		STORYBLOK_VERSION?: string;
+		PUBLIC_SANITY_PROJECT_ID?: string;
+		PUBLIC_SANITY_DATASET?: string;
 	}
 }
