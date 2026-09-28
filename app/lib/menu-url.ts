@@ -19,6 +19,11 @@ const shopifyResourceTypes = new Set([
   'SHOP_POLICY',
 ]);
 
+function normalizeStorefrontPath(path: string) {
+  // English is the default locale served at the root in this Hydrogen storefront.
+  return path.replace(/^\/en(?=\/|$)/i, '') || '/';
+}
+
 function hostname(value?: string | null) {
   if (!value) return '';
 
@@ -32,7 +37,9 @@ function hostname(value?: string | null) {
 export function resolveMenuUrl(item: MenuUrlInput, domains: MenuUrlDomains = {}) {
   const rawUrl = item.url?.trim();
   if (!rawUrl) return null;
-  if (rawUrl.startsWith('/')) return {href: rawUrl, external: false};
+  if (rawUrl.startsWith('/')) {
+    return {href: normalizeStorefrontPath(rawUrl), external: false};
+  }
 
   let parsed: URL;
   try {
@@ -41,7 +48,7 @@ export function resolveMenuUrl(item: MenuUrlInput, domains: MenuUrlDomains = {})
     return {href: rawUrl, external: false};
   }
 
-  const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  const path = `${normalizeStorefrontPath(parsed.pathname)}${parsed.search}${parsed.hash}`;
   const itemType = item.type?.toUpperCase() ?? '';
   const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
   const configuredHosts = [hostname(domains.publicStoreDomain), hostname(domains.primaryDomainUrl)].filter(Boolean);
