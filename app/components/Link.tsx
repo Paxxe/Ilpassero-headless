@@ -6,12 +6,14 @@ import {
   type LinkProps,
   type NavLinkProps,
 } from 'react-router';
-import {localizePath} from '~/lib/i18n';
+import {getPathPrefix, localizePath} from '~/lib/i18n';
 
 /** Returns a function that prefixes absolute in-app paths with the current locale. */
 export function useLocalePath() {
   const {locale} = useParams();
-  const pathPrefix = locale ? `/${locale.toLowerCase()}` : '';
+  // Only a well-formed /{language}-{country} segment counts: on a 404 like
+  // /en/collections/x the links must not inherit the bogus "/en" prefix.
+  const pathPrefix = locale ? getPathPrefix(`/${locale}`) : '';
   return useCallback(
     (path: string) => localizePath(path, pathPrefix),
     [pathPrefix],
