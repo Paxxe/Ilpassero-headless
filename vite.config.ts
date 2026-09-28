@@ -34,6 +34,7 @@ export default defineConfig({
        */
       include: [
         'rxjs',
+        'rxjs/operators',
         'react-router > set-cookie-parser',
         'react-router > cookie',
         'react-router',

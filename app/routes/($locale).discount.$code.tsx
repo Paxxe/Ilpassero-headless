@@ -1,5 +1,6 @@
 import {redirect} from 'react-router';
-import type {Route} from './+types/discount.$code';
+import type {Route} from './+types/($locale).discount.$code';
+import {localizePath, toPathPrefix} from '~/lib/i18n';
 
 /**
  * Automatically applies a discount found on the url
@@ -29,7 +30,7 @@ export async function loader({request, context, params}: Route.LoaderArgs) {
   searchParams.delete('redirect');
   searchParams.delete('return_to');
 
-  const redirectUrl = `${redirectParam}?${searchParams}`;
+  const redirectUrl = `${localizePath(redirectParam, toPathPrefix(context.storefront.i18n))}?${searchParams}`;
 
   if (!code) {
     return redirect(redirectUrl);

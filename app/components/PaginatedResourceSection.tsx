@@ -24,15 +24,11 @@ export function PaginatedResourceSection<NodesType>({
 
         return (
           <div>
-            <PreviousLink>
-              {isLoading ? (
-                'Loading...'
-              ) : (
-                <span>
-                  <span aria-hidden="true">↑</span> Load previous
-                </span>
-              )}
-            </PreviousLink>
+            <div className="load-more load-more--previous">
+              <PreviousLink className="load-more__button">
+                {isLoading ? 'Loading…' : 'Load previous'}
+              </PreviousLink>
+            </div>
             {resourcesClassName ? (
               <div
                 aria-label={ariaLabel}
@@ -44,15 +40,11 @@ export function PaginatedResourceSection<NodesType>({
             ) : (
               resourcesMarkup
             )}
-            <NextLink>
-              {isLoading ? (
-                'Loading...'
-              ) : (
-                <span>
-                  Load more <span aria-hidden="true">↓</span>
-                </span>
-              )}
-            </NextLink>
+            <div className="load-more">
+              <NextLink className="load-more__button">
+                {isLoading ? 'Loading…' : 'Load more'}
+              </NextLink>
+            </div>
           </div>
         );
       }}

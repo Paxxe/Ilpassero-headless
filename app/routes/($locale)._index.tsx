@@ -1,5 +1,6 @@
-import {Await, useLoaderData, Link} from 'react-router';
-import type {Route} from './+types/_index';
+import {Await, useLoaderData} from 'react-router';
+import {Link} from '~/components/Link';
+import type {Route} from './+types/($locale)._index';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
 import type {
@@ -7,9 +8,8 @@ import type {
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
+import {PRODUCT_CARD_FRAGMENT} from '~/lib/fragments';
 import {MockShopNotice} from '~/components/MockShopNotice';
-import {StoryblokPage} from '~/components/storyblok/StoryblokPage';
-import {getStoryblokStory, type StoryblokBlock} from '~/lib/storyblok.server';
 import {SanityPageBuilder, type ResolvedSection} from '~/components/sanity/SanityPageBuilder';
 import {getSanityPage, type SanityCarouselSection} from '~/lib/sanity.server';
 
@@ -32,13 +32,8 @@ export async function loader(args: Route.LoaderArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}, storyblokStory, sanityPage] = await Promise.all([
+  const [{collections}, sanityPage] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
-    getStoryblokStory(
-      'home',
-      context.env.STORYBLOK_ACCESS_TOKEN,
-      context.env.STORYBLOK_VERSION || 'draft',
-    ),
     getSanityPage('home', context.env.PUBLIC_SANITY_PROJECT_ID, context.env.PUBLIC_SANITY_DATASET),
   ]);
 
@@ -64,7 +59,6 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     featuredCollection: collections.nodes[0],
-    storyblokStory,
     sanityPage,
     sanitySections,
   };
@@ -93,10 +87,6 @@ export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   if (data.sanityPage) {
     return <SanityPageBuilder sections={data.sanitySections} />;
-  }
-  const body = data.storyblokStory?.content.body;
-  if (data.storyblokStory && Array.isArray(body)) {
-    return <StoryblokPage blocks={body as StoryblokBlock[]} />;
   }
 
   return (
@@ -148,7 +138,7 @@ function RecommendedProducts({
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => (
-            <div className="recommended-products-grid">
+            <div className="product-grid">
               {response
                 ? response.products.nodes.map((product) => (
                     <ProductItem key={product.id} product={product} />
@@ -187,29 +177,12 @@ const FEATURED_COLLECTION_QUERY = `#graphql
 ` as const;
 
 const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    featuredImage {
-      id
-      url
-      altText
-      width
-      height
-    }
-  }
+  ${PRODUCT_CARD_FRAGMENT}
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
     products(first: 4, sortKey: UPDATED_AT, reverse: true) {
       nodes {
-        ...RecommendedProduct
+        ...ProductCard
       }
     }
   }

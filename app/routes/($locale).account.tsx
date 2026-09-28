@@ -1,11 +1,11 @@
 import {
   data as remixData,
   Form,
-  NavLink,
   Outlet,
   useLoaderData,
 } from 'react-router';
-import type {Route} from './+types/account';
+import {NavLink, useLocalePath} from '~/components/Link';
+import type {Route} from './+types/($locale).account';
 import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
 
 export function shouldRevalidate() {
@@ -89,8 +89,9 @@ function AccountMenu() {
 }
 
 function Logout() {
+  const logoutPath = useLocalePath()('/account/logout');
   return (
-    <Form className="account-logout" method="POST" action="/account/logout">
+    <Form className="account-logout" method="POST" action={logoutPath}>
       &nbsp;<button type="submit">Sign out</button>
     </Form>
   );

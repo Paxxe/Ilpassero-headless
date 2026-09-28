@@ -1,5 +1,5 @@
 import {useRef} from 'react';
-import {Link} from 'react-router';
+import {Link} from '~/components/Link';
 
 export type RailProduct = {
   id: string;

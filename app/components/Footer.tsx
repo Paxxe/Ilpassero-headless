@@ -1,5 +1,6 @@
 import {Suspense} from 'react';
-import {Await, NavLink} from 'react-router';
+import {Await} from 'react-router';
+import {NavLink} from '~/components/Link';
 import type {FooterQuery, HeaderQuery} from 'storefrontapi.generated';
 import {resolveMenuUrl} from '~/lib/menu-url';
 

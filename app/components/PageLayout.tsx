@@ -1,4 +1,5 @@
-import {Await, Link} from 'react-router';
+import {Await} from 'react-router';
+import {Link} from '~/components/Link';
 import {Suspense, useId} from 'react';
 import type {
   CartApiQueryFragment,

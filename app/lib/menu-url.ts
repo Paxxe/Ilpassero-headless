@@ -1,3 +1,5 @@
+import {stripLocalePrefix} from '~/lib/i18n';
+
 type MenuUrlInput = {
   url?: string | null;
   type?: string | null;
@@ -20,8 +22,9 @@ const shopifyResourceTypes = new Set([
 ]);
 
 function normalizeStorefrontPath(path: string) {
-  // English is the default locale served at the root in this Hydrogen storefront.
-  return path.replace(/^\/en(?=\/|$)/i, '') || '/';
+  // Shopify adds its Markets subfolder (/en, /en-us...) to menu URLs. Drop it:
+  // ~/components/Link adds the storefront's own locale prefix.
+  return stripLocalePrefix(path) || '/';
 }
 
 function hostname(value?: string | null) {
@@ -53,7 +56,7 @@ export function resolveMenuUrl(item: MenuUrlInput, domains: MenuUrlDomains = {})
   const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
   const configuredHosts = [hostname(domains.publicStoreDomain), hostname(domains.primaryDomainUrl)].filter(Boolean);
   const isShopifyHost = host.endsWith('.myshopify.com') || configuredHosts.includes(host);
-  const isShopifyResource = shopifyResourceTypes.has(itemType) || shopifyResourcePath.test(parsed.pathname);
+  const isShopifyResource = shopifyResourceTypes.has(itemType) || shopifyResourcePath.test(stripLocalePrefix(parsed.pathname));
 
   if (isShopifyHost || isShopifyResource) {
     return {href: path || '/', external: false};

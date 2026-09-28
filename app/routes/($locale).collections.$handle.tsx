@@ -1,10 +1,14 @@
 import {redirect, useLoaderData} from 'react-router';
-import type {Route} from './+types/collections.$handle';
+import type {Route} from './+types/($locale).collections.$handle';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
-import type {ProductItemFragment} from 'storefrontapi.generated';
+import type {ProductCardFragment} from 'storefrontapi.generated';
+import {PRODUCT_CARD_FRAGMENT} from '~/lib/fragments';
+import {localizePath, toPathPrefix} from '~/lib/i18n';
+
+const PRODUCTS_PER_PAGE = 32;
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
@@ -28,11 +32,11 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
   const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
+    pageBy: PRODUCTS_PER_PAGE,
   });
 
   if (!handle) {
-    throw redirect('/collections');
+    throw redirect(localizePath('/collections', toPathPrefix(storefront.i18n)));
   }
 
   const [{collection}] = await Promise.all([
@@ -69,18 +73,22 @@ export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
 
   return (
-    <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
-      <PaginatedResourceSection<ProductItemFragment>
+    <div className="plp">
+      <header className="plp__header">
+        <h1 className="plp__title">{collection.title}</h1>
+        {collection.description ? (
+          <p className="plp__description">{collection.description}</p>
+        ) : null}
+      </header>
+      <PaginatedResourceSection<ProductCardFragment>
         connection={collection.products}
-        resourcesClassName="products-grid"
+        resourcesClassName="product-grid"
       >
         {({node: product, index}) => (
           <ProductItem
             key={product.id}
             product={product}
-            loading={index < 8 ? 'eager' : undefined}
+            loading={index < 4 ? 'eager' : undefined}
           />
         )}
       </PaginatedResourceSection>
@@ -96,36 +104,9 @@ export default function Collection() {
   );
 }
 
-const PRODUCT_ITEM_FRAGMENT = `#graphql
-  fragment MoneyProductItem on MoneyV2 {
-    amount
-    currencyCode
-  }
-  fragment ProductItem on Product {
-    id
-    handle
-    title
-    featuredImage {
-      id
-      altText
-      url
-      width
-      height
-    }
-    priceRange {
-      minVariantPrice {
-        ...MoneyProductItem
-      }
-      maxVariantPrice {
-        ...MoneyProductItem
-      }
-    }
-  }
-` as const;
-
 // NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
-  ${PRODUCT_ITEM_FRAGMENT}
+  ${PRODUCT_CARD_FRAGMENT}
   query Collection(
     $handle: String!
     $country: CountryCode
@@ -147,7 +128,7 @@ const COLLECTION_QUERY = `#graphql
         after: $endCursor
       ) {
         nodes {
-          ...ProductItem
+          ...ProductCard
         }
         pageInfo {
           hasPreviousPage

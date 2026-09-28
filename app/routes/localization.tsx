@@ -1,28 +1,24 @@
 import {redirect} from 'react-router';
 import type {Route} from './+types/localization';
+import {getAvailableLocales, localizePath, stripLocalePrefix} from '~/lib/i18n';
 
-const ACTIVE_COUNTRIES_QUERY = `#graphql
-  query ActiveCountries {
-    localization {
-      availableCountries { isoCode }
-    }
-  }
-` as const;
-
+/**
+ * Country/language selector endpoint.
+ * POST `pathPrefix` (e.g. "/en-us", "" for Italy/Italian) and `returnTo`
+ * (the current path) to switch locale and keep the visitor on the same page.
+ */
 export async function action({request, context}: Route.ActionArgs) {
+  const {storefront, cart} = context;
   const formData = await request.formData();
-  const country = String(formData.get('country') || '').toUpperCase();
+  const pathPrefix = String(formData.get('pathPrefix') ?? '').toLowerCase();
 
-  if (!/^[A-Z]{2}$/.test(country)) {
-    throw new Response('Invalid country code', {status: 400});
+  const locales = await getAvailableLocales(storefront);
+  const locale = locales.find((item) => item.pathPrefix === pathPrefix);
+  if (!locale) {
+    throw new Response('This locale is not available for the storefront', {
+      status: 400,
+    });
   }
-
-  const {localization} = await context.storefront.query(ACTIVE_COUNTRIES_QUERY);
-  if (!localization.availableCountries.some((activeCountry) => activeCountry.isoCode === country)) {
-    throw new Response('This country is not available for the storefront', {status: 400});
-  }
-
-  context.session.set('country', country);
 
   const requestUrl = new URL(request.url);
   const returnTo = String(formData.get('returnTo') || '/');
@@ -31,6 +27,22 @@ export async function action({request, context}: Route.ActionArgs) {
     throw new Response('Invalid return URL', {status: 400});
   }
 
-  target.searchParams.set('country', country);
-  return redirect(`${target.pathname}${target.search}${target.hash}`);
+  // Keep prices and availability in the cart consistent with the new country
+  const headers = new Headers();
+  if (cart.getCartId()) {
+    const result = await cart.updateBuyerIdentity({
+      countryCode: locale.country,
+    });
+    if (result.cart?.id) {
+      cart
+        .setCartId(result.cart.id)
+        .forEach((value, key) => headers.append(key, value));
+    }
+  }
+
+  const path = localizePath(
+    stripLocalePrefix(target.pathname),
+    locale.pathPrefix,
+  );
+  return redirect(`${path}${target.search}${target.hash}`, {headers});
 }

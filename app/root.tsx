@@ -17,6 +17,7 @@ import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
+import {getAvailableLocales, getPathPrefix} from '~/lib/i18n';
 
 export type RootLoader = typeof loader;
 
@@ -33,6 +34,11 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
   // revalidate when manually revalidating via useRevalidator
   if (currentUrl.toString() === nextUrl.toString()) return true;
+
+  // revalidate when the locale prefix changes (menus, footer and cart are localized)
+  if (getPathPrefix(currentUrl.pathname) !== getPathPrefix(nextUrl.pathname)) {
+    return true;
+  }
 
   // Defaulting to no revalidation for root loader data to improve performance.
   // When using this feature, you risk your UI getting out of sync with your server.
@@ -101,34 +107,19 @@ export async function loader(args: Route.LoaderArgs) {
 async function loadCriticalData({context}: Route.LoaderArgs) {
   const {storefront} = context;
 
-  const [header, localizationResult] = await Promise.all([
+  const [header, locales] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
         headerMenuHandle: 'main-menu', // Adjust to your header menu handle
       },
     }),
-    storefront.query(LOCALIZATION_QUERY, {
-      cache: storefront.CacheLong(),
-    }),
+    getAvailableLocales(storefront),
     // Add other queries here, so that they are loaded in parallel
   ]);
 
-  return {header, localization: localizationResult.localization};
+  return {header, locales, selectedLocale: storefront.i18n};
 }
-
-const LOCALIZATION_QUERY = `#graphql
-  query FooterCountrySelector {
-    localization {
-      country { isoCode }
-      availableCountries {
-        isoCode
-        name
-        currency { isoCode }
-      }
-    }
-  }
-` as const;
 
 /**
  * Load data for rendering content below the fold. This data is deferred and will be
@@ -160,9 +151,11 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 
 export function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
+  const data = useRouteLoaderData<RootLoader>('root');
+  const lang = data?.selectedLocale.language.toLowerCase().replace('_', '-') ?? 'it';
 
   return (
-    <html lang="en">
+    <html lang={lang}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />

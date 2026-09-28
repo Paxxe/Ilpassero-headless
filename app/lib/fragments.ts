@@ -243,3 +243,45 @@ export const FOOTER_QUERY = `#graphql
   }
   ${MENU_FRAGMENT}
 ` as const;
+
+// Product card used by PLPs, catalog and product rails (components/ProductItem)
+export const PRODUCT_CARD_FRAGMENT = `#graphql
+  fragment ProductCardMoney on MoneyV2 {
+    amount
+    currencyCode
+  }
+  fragment ProductCardImage on Image {
+    id
+    altText
+    url
+    width
+    height
+  }
+  fragment ProductCard on Product {
+    id
+    handle
+    title
+    availableForSale
+    featuredImage {
+      ...ProductCardImage
+    }
+    images(first: 2) {
+      nodes {
+        ...ProductCardImage
+      }
+    }
+    priceRange {
+      minVariantPrice {
+        ...ProductCardMoney
+      }
+      maxVariantPrice {
+        ...ProductCardMoney
+      }
+    }
+    compareAtPriceRange {
+      minVariantPrice {
+        ...ProductCardMoney
+      }
+    }
+  }
+` as const;

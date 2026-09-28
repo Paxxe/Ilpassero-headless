@@ -1,5 +1,6 @@
 import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from 'react-router';
+import {Await, useAsyncValue} from 'react-router';
+import {NavLink, useLocalePath} from '~/components/Link';
 import {
   type CartViewPayload,
   useAnalytics,
@@ -171,10 +172,11 @@ function SearchToggle() {
 function CartBadge({count}: {count: number}) {
   const {open} = useAside();
   const {publish, shop, cart, prevCart} = useAnalytics();
+  const cartPath = useLocalePath()('/cart');
 
   return (
     <a
-      href="/cart"
+      href={cartPath}
       onClick={(e) => {
         e.preventDefault();
         open('cart');

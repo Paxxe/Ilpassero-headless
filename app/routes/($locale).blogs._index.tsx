@@ -1,5 +1,6 @@
-import {Link, useLoaderData} from 'react-router';
-import type {Route} from './+types/blogs._index';
+import {useLoaderData} from 'react-router';
+import {Link} from '~/components/Link';
+import type {Route} from './+types/($locale).blogs._index';
 import {getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import type {BlogsQuery} from 'storefrontapi.generated';
