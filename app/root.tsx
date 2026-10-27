@@ -18,6 +18,8 @@ import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 import {getAvailableLocales, getPathPrefix} from '~/lib/i18n';
+import {getStudioUrl, isSanityPreview} from '~/lib/sanity.server';
+import {VisualEditing} from '@sanity/visual-editing/react-router';
 
 export type RootLoader = typeof loader;
 
@@ -84,6 +86,8 @@ export async function loader(args: Route.LoaderArgs) {
   return {
     ...deferredData,
     ...criticalData,
+    sanityPreview: await isSanityPreview(args.request, env),
+    sanityStudioUrl: getStudioUrl(env),
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     shop: getShopAnalytics({
       storefront,
@@ -190,6 +194,7 @@ export default function App() {
       <PageLayout {...data}>
         <Outlet />
       </PageLayout>
+      {data.sanityPreview ? <VisualEditing /> : null}
     </Analytics.Provider>
   );
 }

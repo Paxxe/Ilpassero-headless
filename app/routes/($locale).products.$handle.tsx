@@ -12,10 +12,15 @@ import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {Sections} from '~/components/sanity/Sections';
+import {getPreviewTemplateId, getSanity} from '~/lib/sanity.server';
+import {RESOURCE_TEMPLATE_QUERY} from '~/lib/sanity/queries';
+import {resolveSections} from '~/lib/sanity/sections.server';
+import type {MainProductSection, TemplateDocument} from '~/lib/sanity/types';
 
 export const meta: Route.MetaFunction = ({data}) => {
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: `${data?.product.title ?? ''} | Il Passero`},
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,
@@ -45,11 +50,16 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}] = await Promise.all([
+  const sanity = await getSanity(request, context.env);
+  const [{product}, template] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
+    sanity.fetch<TemplateDocument>(RESOURCE_TEMPLATE_QUERY, {
+      type: 'product',
+      handle,
+      previewTemplate: getPreviewTemplateId(request, sanity.preview),
+    }),
   ]);
 
   if (!product?.id) {
@@ -59,8 +69,11 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
+  const sections = template?.sections?.length ? await resolveSections(template.sections, storefront) : null;
+
   return {
     product,
+    template: template && sections ? {_id: template._id, _type: template._type, sections} : null,
   };
 }
 
@@ -77,8 +90,29 @@ function loadDeferredData({context, params}: Route.LoaderArgs) {
 }
 
 export default function Product() {
-  const {product} = useLoaderData<typeof loader>();
+  const {product, template} = useLoaderData<typeof loader>();
 
+  if (!template) return <ProductMain product={product} />;
+
+  return (
+    <Sections
+      document={template}
+      sections={template.sections}
+      renderMain={(section) =>
+        section._type === 'mainProductSection' ? <ProductMain product={product} section={section} /> : null
+      }
+    />
+  );
+}
+
+/** Gallery, price, variant picker and add to cart ("Scheda prodotto"). */
+function ProductMain({
+  product,
+  section,
+}: {
+  product: Route.ComponentProps['loaderData']['product'];
+  section?: MainProductSection;
+}) {
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
@@ -95,12 +129,28 @@ export default function Product() {
     selectedOrFirstAvailableVariant: selectedVariant,
   });
 
-  const {title, descriptionHtml} = product;
+  const {title, descriptionHtml, vendor} = product;
+  const showDescription = section?.showDescription ?? true;
+
+  // Selected variant image first, then the rest of the product gallery
+  const gallery = [
+    ...(selectedVariant?.image ? [selectedVariant.image] : []),
+    ...product.images.nodes.filter((image) => image.id !== selectedVariant?.image?.id),
+  ];
 
   return (
     <div className="product">
-      <ProductImage image={selectedVariant?.image} />
+      {section ? (
+        <div className={`product-gallery product-gallery--${section.galleryLayout ?? 'grid'}`}>
+          {gallery.map((image, index) => (
+            <ProductImage key={image.id ?? index} image={image} />
+          ))}
+        </div>
+      ) : (
+        <ProductImage image={selectedVariant?.image} />
+      )}
       <div className="product-main">
+        {section?.showVendor && vendor ? <p className="cms-eyebrow">{vendor}</p> : null}
         <h1>{title}</h1>
         <ProductPrice
           price={selectedVariant?.price}
@@ -111,14 +161,18 @@ export default function Product() {
           productOptions={productOptions}
           selectedVariant={selectedVariant}
         />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
+        {showDescription ? (
+          <>
+            <br />
+            <br />
+            <p>
+              <strong>Descrizione</strong>
+            </p>
+            <br />
+            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+            <br />
+          </>
+        ) : null}
       </div>
       <Analytics.ProductView
         data={{
@@ -184,6 +238,16 @@ const PRODUCT_FRAGMENT = `#graphql
     handle
     descriptionHtml
     description
+    images(first: 12) {
+      nodes {
+        __typename
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
     encodedVariantExistence
     encodedVariantAvailability
     options {

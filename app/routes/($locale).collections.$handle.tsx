@@ -7,11 +7,16 @@ import {ProductItem} from '~/components/ProductItem';
 import type {ProductCardFragment} from 'storefrontapi.generated';
 import {PRODUCT_CARD_FRAGMENT} from '~/lib/fragments';
 import {localizePath, toPathPrefix} from '~/lib/i18n';
+import {Sections} from '~/components/sanity/Sections';
+import {getPreviewTemplateId, getSanity} from '~/lib/sanity.server';
+import {RESOURCE_TEMPLATE_QUERY} from '~/lib/sanity/queries';
+import {resolveSections} from '~/lib/sanity/sections.server';
+import type {MainCollectionSection, TemplateDocument} from '~/lib/sanity/types';
 
 const PRODUCTS_PER_PAGE = 32;
 
 export const meta: Route.MetaFunction = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  return [{title: `${data?.collection.title ?? ''} | Il Passero`}];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -31,19 +36,30 @@ export async function loader(args: Route.LoaderArgs) {
 async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
   const {handle} = params;
   const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: PRODUCTS_PER_PAGE,
-  });
 
   if (!handle) {
     throw redirect(localizePath('/collections', toPathPrefix(storefront.i18n)));
   }
 
-  const [{collection}] = await Promise.all([
+  // The Studio template decides the layout and how many products per page
+  const sanity = await getSanity(request, context.env);
+  const template = await sanity.fetch<TemplateDocument>(RESOURCE_TEMPLATE_QUERY, {
+    type: 'collection',
+    handle,
+    previewTemplate: getPreviewTemplateId(request, sanity.preview),
+  });
+  const main = template?.sections?.find(
+    (section): section is MainCollectionSection => section._type === 'mainCollectionSection',
+  );
+  const paginationVariables = getPaginationVariables(request, {
+    pageBy: Math.min(Math.max(main?.productsPerPage ?? PRODUCTS_PER_PAGE, 8), 48),
+  });
+
+  const [{collection}, sections] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
       variables: {handle, ...paginationVariables},
-      // Add other queries here, so that they are loaded in parallel
     }),
+    template?.sections?.length ? resolveSections(template.sections, storefront) : null,
   ]);
 
   if (!collection) {
@@ -57,6 +73,7 @@ async function loadCriticalData({context, params, request}: Route.LoaderArgs) {
 
   return {
     collection,
+    template: template && sections ? {_id: template._id, _type: template._type, sections} : null,
   };
 }
 
@@ -70,19 +87,59 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 }
 
 export default function Collection() {
-  const {collection} = useLoaderData<typeof loader>();
+  const {collection, template} = useLoaderData<typeof loader>();
+
+  return (
+    <>
+      {template ? (
+        <Sections
+          document={template}
+          sections={template.sections}
+          renderMain={(section) =>
+            section._type === 'mainCollectionSection' ? (
+              <CollectionMain collection={collection} section={section} />
+            ) : null
+          }
+        />
+      ) : (
+        <CollectionMain collection={collection} />
+      )}
+      <Analytics.CollectionView
+        data={{
+          collection: {
+            id: collection.id,
+            handle: collection.handle,
+          },
+        }}
+      />
+    </>
+  );
+}
+
+/** Title, description and paginated product grid ("Griglia prodotti collezione"). */
+function CollectionMain({
+  collection,
+  section,
+}: {
+  collection: Route.ComponentProps['loaderData']['collection'];
+  section?: MainCollectionSection;
+}) {
+  const showTitle = section?.showTitle ?? true;
+  const showDescription = section?.showDescription ?? true;
 
   return (
     <div className="plp">
-      <header className="plp__header">
-        <h1 className="plp__title">{collection.title}</h1>
-        {collection.description ? (
-          <p className="plp__description">{collection.description}</p>
-        ) : null}
-      </header>
+      {showTitle || (showDescription && collection.description) ? (
+        <header className="plp__header">
+          {showTitle ? <h1 className="plp__title">{collection.title}</h1> : null}
+          {showDescription && collection.description ? (
+            <p className="plp__description">{collection.description}</p>
+          ) : null}
+        </header>
+      ) : null}
       <PaginatedResourceSection<ProductCardFragment>
         connection={collection.products}
-        resourcesClassName="product-grid"
+        resourcesClassName={`product-grid${section?.columnsDesktop === 3 ? ' product-grid--3' : ''}`}
       >
         {({node: product, index}) => (
           <ProductItem
@@ -92,14 +149,6 @@ export default function Collection() {
           />
         )}
       </PaginatedResourceSection>
-      <Analytics.CollectionView
-        data={{
-          collection: {
-            id: collection.id,
-            handle: collection.handle,
-          },
-        }}
-      />
     </div>
   );
 }

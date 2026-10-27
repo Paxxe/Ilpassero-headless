@@ -6,6 +6,7 @@ import {
   type HydrogenRouterContextProvider,
 } from '@shopify/hydrogen';
 import type {EntryContext} from 'react-router';
+import {getStudioUrl} from '~/lib/sanity.server';
 
 export default async function handleRequest(
   request: Request,
@@ -19,6 +20,19 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    // Sanity: images, API/live connection and the Studio's Presentation iframe
+    imgSrc: [
+      "'self'",
+      'data:',
+      'blob:',
+      'https://cdn.shopify.com',
+      'https://cdn.sanity.io',
+    ],
+    connectSrc: ['https://*.api.sanity.io', 'wss://*.api.sanity.io', 'https://*.apicdn.sanity.io'],
+    frameAncestors: [
+      "'self'",
+      ...new Set([getStudioUrl(context.env), 'http://localhost:3333', 'https://ilpassero.sanity.studio']),
+    ],
   });
 
   const body = await renderToReadableStream(

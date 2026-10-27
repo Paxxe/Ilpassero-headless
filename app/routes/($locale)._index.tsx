@@ -10,11 +10,20 @@ import type {
 import {ProductItem} from '~/components/ProductItem';
 import {PRODUCT_CARD_FRAGMENT} from '~/lib/fragments';
 import {MockShopNotice} from '~/components/MockShopNotice';
-import {SanityPageBuilder, type ResolvedSection} from '~/components/sanity/SanityPageBuilder';
-import {getSanityPage, type SanityCarouselSection} from '~/lib/sanity.server';
+import {stegaClean} from '@sanity/client/stega';
+import {Sections} from '~/components/sanity/Sections';
+import {getSanity} from '~/lib/sanity.server';
+import {HOME_QUERY} from '~/lib/sanity/queries';
+import {resolveSections} from '~/lib/sanity/sections.server';
+import type {HomeDocument} from '~/lib/sanity/types';
 
-export const meta: Route.MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+export const meta: Route.MetaFunction = ({data}) => {
+  const seo = stegaClean(data?.home?.seo);
+  return [
+    {title: seo?.title || 'Il Passero'},
+    ...(seo?.description ? [{name: 'description', content: seo.description}] : []),
+    ...(seo?.noIndex ? [{name: 'robots', content: 'noindex'}] : []),
+  ];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -31,36 +40,18 @@ export async function loader(args: Route.LoaderArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: Route.LoaderArgs) {
-  const [{collections}, sanityPage] = await Promise.all([
+async function loadCriticalData({context, request}: Route.LoaderArgs) {
+  const sanity = await getSanity(request, context.env);
+  const [{collections}, home] = await Promise.all([
     context.storefront.query(FEATURED_COLLECTION_QUERY),
-    getSanityPage('home', context.env.PUBLIC_SANITY_PROJECT_ID, context.env.PUBLIC_SANITY_DATASET),
+    sanity.fetch<HomeDocument>(HOME_QUERY),
   ]);
-
-  const sanitySections: ResolvedSection[] = sanityPage
-    ? await Promise.all(sanityPage.sections.map(async (section) => {
-        if (section._type === 'collectionCarouselSection') {
-          const result = await context.storefront.query(COLLECTION_CAROUSEL_QUERY, {
-            variables: {handle: section.collectionHandle || '', first: Math.min(section.limit || 8, 20)},
-          });
-          return {section, products: result.collection?.products.nodes || []};
-        }
-        if (section._type === 'productCarouselSection') {
-          const products = await Promise.all((section.productHandles || []).map(async (handle) => {
-            const result = await context.storefront.query(PRODUCT_BY_HANDLE_QUERY, {variables: {handle}});
-            return result.product;
-          }));
-          return {section, products: products.filter(Boolean)};
-        }
-        return {section};
-      }))
-    : [];
 
   return {
     isShopLinked: Boolean(context.env.PUBLIC_STORE_DOMAIN),
     featuredCollection: collections.nodes[0],
-    sanityPage,
-    sanitySections,
+    home,
+    homeSections: home?.sections?.length ? await resolveSections(home.sections, context.storefront) : null,
   };
 }
 
@@ -85,8 +76,8 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
-  if (data.sanityPage) {
-    return <SanityPageBuilder sections={data.sanitySections} />;
+  if (data.home && data.homeSections) {
+    return <Sections document={data.home} sections={data.homeSections} />;
   }
 
   return (
@@ -185,33 +176,5 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
         ...ProductCard
       }
     }
-  }
-` as const;
-
-const CAROUSEL_PRODUCT_FRAGMENT = `#graphql
-  fragment SanityCarouselProduct on Product {
-    id
-    handle
-    title
-    featuredImage { url altText width height }
-    priceRange { minVariantPrice { amount currencyCode } }
-  }
-` as const;
-
-const COLLECTION_CAROUSEL_QUERY = `#graphql
-  ${CAROUSEL_PRODUCT_FRAGMENT}
-  query SanityCollectionCarousel($handle: String!, $first: Int!, $country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collection(handle: $handle) {
-      products(first: $first) { nodes { ...SanityCarouselProduct } }
-    }
-  }
-` as const;
-
-const PRODUCT_BY_HANDLE_QUERY = `#graphql
-  ${CAROUSEL_PRODUCT_FRAGMENT}
-  query SanitySelectedProduct($handle: String!, $country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    product(handle: $handle) { ...SanityCarouselProduct }
   }
 ` as const;

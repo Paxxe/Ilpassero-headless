@@ -10,5 +10,7 @@ declare global {
 	interface Env {
 		PUBLIC_SANITY_PROJECT_ID?: string;
 		PUBLIC_SANITY_DATASET?: string;
+		PUBLIC_SANITY_STUDIO_URL?: string;
+		SANITY_API_READ_TOKEN?: string;
 	}
 }

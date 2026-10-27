@@ -38,6 +38,8 @@ export default defineConfig({
         'react-router > set-cookie-parser',
         'react-router > cookie',
         'react-router',
+        // Sanity visual editing (CJS dependency)
+        '@sanity/visual-editing > react-compiler-runtime',
       ],
     },
   },
