@@ -32,6 +32,9 @@ export default async function handleRequest(
     frameAncestors: [
       "'self'",
       ...new Set([getStudioUrl(context.env), 'http://localhost:3333', 'https://ilpassero.sanity.studio']),
+      // The Studio can also be opened inside the sanity.io dashboard (one more iframe level)
+      'https://www.sanity.io',
+      'https://sanity.io',
     ],
   });
 
