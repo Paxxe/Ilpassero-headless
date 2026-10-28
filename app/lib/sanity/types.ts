@@ -69,9 +69,20 @@ export type ProductRailSection = SectionBase & {
   productHandles?: string[] | null;
   limit?: number;
   layout?: 'carousel' | 'grid';
+  carousel?: CarouselOptions | null;
   cta?: SanityLink;
   /** Filled on the server from Shopify. */
   products?: ProductCardFragment[];
+};
+
+export type CarouselOptions = {
+  slidesDesktop?: number;
+  slidesMobile?: number;
+  showArrows?: boolean;
+  showPagination?: boolean;
+  loop?: boolean;
+  autoplay?: boolean;
+  autoplayDelay?: number;
 };
 
 export type CollectionCard = {

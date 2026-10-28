@@ -55,6 +55,7 @@ const SECTION_FIELDS = `
   },
   _type == "productRailSection" => {
     title, source, limit, layout,
+    carousel{slidesDesktop, slidesMobile, showArrows, showPagination, loop, autoplay, autoplayDelay},
     "collectionHandle": collection.handle,
     "productHandles": products[].handle,
     cta ${LINK}

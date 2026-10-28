@@ -952,6 +952,16 @@ button.reset:hover:not(:has(> *)) {
 .cms-section-header__actions { align-items: center; display: flex; gap: 1rem; }
 .cms-rail__controls { display: flex; gap: .5rem; }
 .cms-rail__controls button { background: transparent; border: 1px solid currentColor; color: inherit; cursor: pointer; padding: .5rem .8rem; }
+/* Swiper carousel: widths before init match the Studio options (no layout jump) */
+.cms-carousel { --slides: var(--slides-mobile); }
+@media (min-width: 720px) { .cms-carousel { --slides: min(var(--slides-desktop), 3); } }
+@media (min-width: 1024px) { .cms-carousel { --slides: var(--slides-desktop); } }
+.cms-carousel .swiper:not(.swiper-initialized) .swiper-wrapper { display: flex; gap: var(--gap); overflow: hidden; }
+.cms-carousel .swiper:not(.swiper-initialized) .swiper-slide { flex: 0 0 calc((100% - (var(--slides) - 1) * var(--gap)) / var(--slides)); }
+.cms-carousel .swiper { padding-bottom: 0; }
+.cms-carousel .swiper-pagination { margin-top: 1.25rem; position: static; }
+.cms-carousel .swiper-pagination-bullet { background: currentColor; }
+.cms-carousel .swiper-slide { height: auto; }
 .cms-rail__track { display: grid; gap: 1.25rem; grid-auto-columns: minmax(220px, calc((100% - 3 * 1.25rem) / 4)); grid-auto-flow: column; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; scrollbar-width: thin; }
 .cms-rail__track > * { scroll-snap-align: start; }
 .cms-section .product-card { color: inherit; }

@@ -1,4 +1,3 @@
-import {useRef} from 'react';
 import {Link} from '~/components/Link';
 import {ProductItem} from '~/components/ProductItem';
 import type {
@@ -11,6 +10,7 @@ import type {
   RichTextSection,
 } from '~/lib/sanity/types';
 import {CmsLink, RichText, SanityImg} from './primitives';
+import {ProductCarousel} from './ProductCarousel';
 
 export function Hero({section, isFirst}: {section: HeroSection; isFirst: boolean}) {
   const {height = 'large', contentPosition = 'bottom-left', overlayOpacity = 30} = section;
@@ -74,33 +74,33 @@ export function ImageWithText({section}: {section: ImageWithTextSection}) {
 }
 
 export function ProductRail({section}: {section: ProductRailSection}) {
-  const track = useRef<HTMLDivElement>(null);
   const products = section.products ?? [];
-  const isCarousel = section.layout !== 'grid';
   if (!products.length) return null;
 
-  const scroll = (direction: 1 | -1) =>
-    track.current?.scrollBy({left: direction * track.current.clientWidth * 0.8, behavior: 'smooth'});
+  const header = (arrows?: React.ReactNode) => (
+    <header className="cms-section-header">
+      {section.title ? <h2 className="cms-heading">{section.title}</h2> : <span />}
+      <div className="cms-section-header__actions">
+        <CmsLink link={section.cta} className="cms-text-link" />
+        {arrows}
+      </div>
+    </header>
+  );
 
   return (
     <div className="cms-container">
-      <header className="cms-section-header">
-        {section.title ? <h2 className="cms-heading">{section.title}</h2> : <span />}
-        <div className="cms-section-header__actions">
-          <CmsLink link={section.cta} className="cms-text-link" />
-          {isCarousel ? (
-            <div className="cms-rail__controls">
-              <button type="button" aria-label="Prodotti precedenti" onClick={() => scroll(-1)}>←</button>
-              <button type="button" aria-label="Prodotti successivi" onClick={() => scroll(1)}>→</button>
-            </div>
-          ) : null}
-        </div>
-      </header>
-      <div ref={track} className={isCarousel ? 'cms-rail__track' : 'product-grid'}>
-        {products.map((product) => (
-          <ProductItem key={product.id} product={product} />
-        ))}
-      </div>
+      {section.layout === 'grid' ? (
+        <>
+          {header()}
+          <div className="product-grid">
+            {products.map((product) => (
+              <ProductItem key={product.id} product={product} />
+            ))}
+          </div>
+        </>
+      ) : (
+        <ProductCarousel products={products} options={section.carousel} header={header} />
+      )}
     </div>
   );
 }
