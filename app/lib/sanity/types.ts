@@ -61,19 +61,14 @@ export type ImageWithTextSection = SectionBase & {
   cta?: SanityLink;
 };
 
-export type ProductRailSection = SectionBase & {
-  _type: 'productRailSection';
-  title?: string;
-  source?: 'collection' | 'products';
-  collectionHandle?: string;
-  productHandles?: string[] | null;
-  limit?: number;
-  layout?: 'carousel' | 'grid';
-  carousel?: CarouselOptions | null;
-  cta?: SanityLink;
-  /** Filled on the server from Shopify. */
-  products?: ProductCardFragment[];
-};
+export type ProductRailSection = SectionBase &
+  ProductSource & {
+    _type: 'productRailSection';
+    title?: string;
+    layout?: 'carousel' | 'grid';
+    carousel?: CarouselOptions | null;
+    cta?: SanityLink;
+  };
 
 export type CarouselOptions = {
   slidesDesktop?: number;
@@ -84,6 +79,28 @@ export type CarouselOptions = {
   autoplay?: boolean;
   autoplayDelay?: number;
 };
+
+/** Products chosen in the Studio: from a collection or picked by hand. */
+type ProductSource = {
+  source?: 'collection' | 'products';
+  collectionHandle?: string;
+  productHandles?: string[] | null;
+  limit?: number;
+  /** Filled on the server from Shopify. */
+  products?: ProductCardFragment[];
+};
+
+export type EditorialCarouselSection = SectionBase &
+  ProductSource & {
+    _type: 'editorialCarouselSection';
+    image?: SanityImage;
+    imagePosition?: 'left' | 'right';
+    eyebrow?: string;
+    title?: string;
+    subtitle?: string;
+    cta?: SanityLink;
+    carousel?: CarouselOptions | null;
+  };
 
 export type CollectionCard = {
   _key: string;
@@ -135,6 +152,7 @@ export type Section =
   | RichTextSection
   | ImageWithTextSection
   | ProductRailSection
+  | EditorialCarouselSection
   | CollectionListSection
   | PromoBannerSection
   | FaqSection

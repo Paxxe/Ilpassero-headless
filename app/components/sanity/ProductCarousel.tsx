@@ -15,8 +15,11 @@ export function ProductCarousel({
   products,
   options,
   header,
+  tabletMax = 3,
 }: {
   products: ProductCardFragment[];
+  /** Most slides between 720px and 1024px (lower it when the carousel is half width). */
+  tabletMax?: number;
   options?: CarouselOptions | null;
   /** Section header; receives the arrows so they sit next to the title. */
   header: (arrows: React.ReactNode) => React.ReactNode;
@@ -45,7 +48,14 @@ export function ProductCarousel({
       <div
         className="cms-carousel"
         // Slide widths before Swiper initialises, to avoid a layout jump
-        style={{'--slides-mobile': slidesMobile, '--slides-desktop': slidesDesktop, '--gap': `${GAP}px`} as React.CSSProperties}
+        style={
+          {
+            '--slides-mobile': slidesMobile,
+            '--slides-tablet': Math.min(slidesDesktop, tabletMax),
+            '--slides-desktop': slidesDesktop,
+            '--gap': `${GAP}px`,
+          } as React.CSSProperties
+        }
       >
         <Swiper
           modules={[A11y, Autoplay, Keyboard, Pagination]}
@@ -53,7 +63,7 @@ export function ProductCarousel({
           spaceBetween={GAP}
           slidesPerView={slidesMobile}
           breakpoints={{
-            720: {slidesPerView: Math.min(slidesDesktop, 3)},
+            720: {slidesPerView: Math.min(slidesDesktop, tabletMax)},
             1024: {slidesPerView: slidesDesktop},
           }}
           loop={loop}

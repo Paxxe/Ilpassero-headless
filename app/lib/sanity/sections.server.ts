@@ -1,6 +1,6 @@
 import type {Storefront} from '@shopify/hydrogen';
 import {PRODUCT_CARD_FRAGMENT} from '~/lib/fragments';
-import type {CollectionListSection, ProductRailSection, Section} from './types';
+import type {CollectionListSection, EditorialCarouselSection, ProductRailSection, Section} from './types';
 
 /**
  * Adds the Shopify data each section needs (product cards, collection
@@ -11,14 +11,20 @@ export async function resolveSections(sections: Section[] | null | undefined, st
 
   return Promise.all(
     visible.map(async (section): Promise<Section> => {
-      if (section._type === 'productRailSection') return resolveProductRail(section, storefront);
+      if (section._type === 'productRailSection' || section._type === 'editorialCarouselSection') {
+        return resolveProducts(section, storefront);
+      }
       if (section._type === 'collectionListSection') return resolveCollectionList(section, storefront);
       return section;
     }),
   );
 }
 
-async function resolveProductRail(section: ProductRailSection, storefront: Storefront): Promise<ProductRailSection> {
+/** Product cards for a section, from its collection or the hand-picked handles. */
+async function resolveProducts<T extends ProductRailSection | EditorialCarouselSection>(
+  section: T,
+  storefront: Storefront,
+): Promise<T> {
   if (section.source === 'products') {
     const handles = (section.productHandles ?? []).filter(Boolean).slice(0, 24);
     const results = await Promise.all(

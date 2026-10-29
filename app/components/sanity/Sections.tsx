@@ -2,7 +2,16 @@ import {useRouteLoaderData} from 'react-router';
 import {createDataAttribute} from '@sanity/visual-editing/create-data-attribute';
 import type {RootLoader} from '~/root';
 import type {MainSection, Section, SectionsDocument} from '~/lib/sanity/types';
-import {CollectionList, Faq, Hero, ImageWithText, ProductRail, PromoBanner, RichTextBlock} from './SectionBlocks';
+import {
+  CollectionList,
+  EditorialCarousel,
+  Faq,
+  Hero,
+  ImageWithText,
+  ProductRail,
+  PromoBanner,
+  RichTextBlock,
+} from './SectionBlocks';
 
 type SectionsProps = {
   /** Document that owns the sections: used to point click-to-edit at the right place. */
@@ -69,6 +78,8 @@ function renderSection(section: Section, isFirst: boolean) {
       return <ImageWithText section={section} />;
     case 'productRailSection':
       return <ProductRail section={section} />;
+    case 'editorialCarouselSection':
+      return <EditorialCarousel section={section} />;
     case 'collectionListSection':
       return <CollectionList section={section} />;
     case 'promoBannerSection':

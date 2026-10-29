@@ -2,6 +2,7 @@ import {Link} from '~/components/Link';
 import {ProductItem} from '~/components/ProductItem';
 import type {
   CollectionListSection,
+  EditorialCarouselSection,
   FaqSection,
   HeroSection,
   ImageWithTextSection,
@@ -101,6 +102,43 @@ export function ProductRail({section}: {section: ProductRailSection}) {
       ) : (
         <ProductCarousel products={products} options={section.carousel} header={header} />
       )}
+    </div>
+  );
+}
+
+/** Large photo on half the screen; title, subtitle, button and product carousel on the other half. */
+export function EditorialCarousel({section}: {section: EditorialCarouselSection}) {
+  const products = section.products ?? [];
+
+  const header = (arrows?: React.ReactNode) => (
+    <header className="cms-editorial__header">
+      <div className="cms-editorial__text">
+        {section.eyebrow ? <p className="cms-eyebrow">{section.eyebrow}</p> : null}
+        {section.title ? <h2 className="cms-heading">{section.title}</h2> : null}
+        {section.subtitle ? <p className="cms-editorial__subtitle">{section.subtitle}</p> : null}
+        <CmsLink link={section.cta} className="cms-button" />
+      </div>
+      {arrows}
+    </header>
+  );
+
+  return (
+    <div className={`cms-editorial cms-editorial--image-${section.imagePosition ?? 'left'}`}>
+      <div className="cms-editorial__media">
+        <SanityImg image={section.image} sizes="(min-width: 64em) 50vw, 100vw" />
+      </div>
+      <div className="cms-editorial__content">
+        {products.length ? (
+          <ProductCarousel
+            products={products}
+            options={{slidesDesktop: 2, ...section.carousel}}
+            tabletMax={2}
+            header={header}
+          />
+        ) : (
+          header()
+        )}
+      </div>
     </div>
   );
 }

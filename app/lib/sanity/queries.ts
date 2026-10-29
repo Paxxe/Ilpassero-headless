@@ -60,6 +60,14 @@ const SECTION_FIELDS = `
     "productHandles": products[].handle,
     cta ${LINK}
   },
+  _type == "editorialCarouselSection" => {
+    eyebrow, title, subtitle, imagePosition, source, limit,
+    image ${IMAGE},
+    carousel{slidesDesktop, slidesMobile, showArrows, showPagination, loop, autoplay, autoplayDelay},
+    "collectionHandle": collection.handle,
+    "productHandles": products[].handle,
+    cta ${LINK}
+  },
   _type == "collectionListSection" => {
     title, columns,
     items[]{_key, label, "handle": collection.handle, image ${IMAGE}}
