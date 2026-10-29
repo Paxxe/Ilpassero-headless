@@ -18,7 +18,9 @@ import appStyles from '~/styles/app.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
 import {getAvailableLocales, getPathPrefix} from '~/lib/i18n';
-import {getStudioUrl, isSanityPreview} from '~/lib/sanity.server';
+import {getSanity, getStudioUrl} from '~/lib/sanity.server';
+import {SITE_SETTINGS_QUERY} from '~/lib/sanity/queries';
+import type {SiteSettings} from '~/lib/sanity/types';
 import {VisualEditing} from '@sanity/visual-editing/react-router';
 
 export type RootLoader = typeof loader;
@@ -86,7 +88,7 @@ export async function loader(args: Route.LoaderArgs) {
   return {
     ...deferredData,
     ...criticalData,
-    sanityPreview: await isSanityPreview(args.request, env),
+    sanityPreview: criticalData.sanityPreview,
     sanityStudioUrl: getStudioUrl(env),
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
     shop: getShopAnalytics({
@@ -108,10 +110,11 @@ export async function loader(args: Route.LoaderArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context}: Route.LoaderArgs) {
+async function loadCriticalData({context, request}: Route.LoaderArgs) {
   const {storefront} = context;
+  const sanity = await getSanity(request, context.env);
 
-  const [header, locales] = await Promise.all([
+  const [header, locales, siteSettings] = await Promise.all([
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
@@ -119,10 +122,10 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
       },
     }),
     getAvailableLocales(storefront),
-    // Add other queries here, so that they are loaded in parallel
+    sanity.fetch<SiteSettings>(SITE_SETTINGS_QUERY),
   ]);
 
-  return {header, locales, selectedLocale: storefront.i18n};
+  return {header, locales, selectedLocale: storefront.i18n, siteSettings, sanityPreview: sanity.preview};
 }
 
 /**

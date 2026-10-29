@@ -244,6 +244,14 @@ button.reset:hover:not(:has(> *)) {
   z-index: 30;
 }
 
+/* Logo from "Impostazioni sito" (SVG code, file or shop name) */
+.header-logo { align-items: center; color: var(--brand-ink); display: inline-flex; flex-shrink: 0; text-decoration: none; }
+.header-logo:hover { text-decoration: none; }
+.logo { border-radius: 0; display: block; height: auto; max-height: calc(var(--header-height) - 1.25rem); max-width: min(var(--logo-width, 140px), 45vw); width: var(--logo-width, 140px); }
+.logo--svg { line-height: 0; }
+.logo--svg svg { display: block; height: auto; max-height: calc(var(--header-height) - 1.25rem); width: 100%; }
+.logo--text { font-family: Georgia, serif; font-size: 1.35rem; font-weight: 400; max-width: none; width: auto; }
+
 .header-menu-mobile-toggle {
   @media (min-width: 48em) {
     display: none;

@@ -125,3 +125,13 @@ export const RESOURCE_TEMPLATE_QUERY = `coalesce(
   *[_type == $type && shopify.handle == $handle][0].template->,
   *[_type == "template" && templateType == $type && isDefault == true][0]
 ) ${TEMPLATE}`;
+
+export const SITE_SETTINGS_QUERY = `*[_type == "siteSettings" && _id == "siteSettings"][0]{
+  _id, _type,
+  logoSvg, logoWidth, logoAlt,
+  "logo": logo{
+    "url": asset->url,
+    "width": asset->metadata.dimensions.width,
+    "height": asset->metadata.dimensions.height
+  }
+}`;

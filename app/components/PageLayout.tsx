@@ -15,6 +15,7 @@ import {
   SearchFormPredictive,
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import type {SiteSettings} from '~/lib/sanity/types';
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
@@ -22,6 +23,7 @@ interface PageLayoutProps {
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  siteSettings?: SiteSettings | null;
   children?: React.ReactNode;
 }
 
@@ -32,6 +34,7 @@ export function PageLayout({
   header,
   isLoggedIn,
   publicStoreDomain,
+  siteSettings,
 }: PageLayoutProps) {
   return (
     <Aside.Provider>
@@ -44,6 +47,7 @@ export function PageLayout({
           cart={cart}
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
+          siteSettings={siteSettings}
         />
       )}
       <main>{children}</main>

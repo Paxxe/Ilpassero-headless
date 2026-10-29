@@ -9,12 +9,15 @@ import {
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
 import {useAside} from '~/components/Aside';
 import {resolveMenuUrl} from '~/lib/menu-url';
+import {Logo} from '~/components/sanity/Logo';
+import type {SiteSettings} from '~/lib/sanity/types';
 
 interface HeaderProps {
   header: HeaderQuery;
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  siteSettings?: SiteSettings | null;
 }
 
 type Viewport = 'desktop' | 'mobile';
@@ -24,12 +27,13 @@ export function Header({
   isLoggedIn,
   cart,
   publicStoreDomain,
+  siteSettings,
 }: HeaderProps) {
   const {shop, menu} = header;
   return (
     <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+      <NavLink className="header-logo" prefetch="intent" to="/" end aria-label={`${shop.name} – Home`}>
+        <Logo settings={siteSettings} fallback={shop.name} />
       </NavLink>
       <HeaderMenu
         menu={menu}

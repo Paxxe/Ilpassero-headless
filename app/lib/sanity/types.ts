@@ -180,3 +180,13 @@ export type PageDocument = SectionsDocument & {
 };
 
 export type TemplateDocument = SectionsDocument & {name?: string};
+
+export type SiteSettings = {
+  _id: string;
+  _type: string;
+  logo?: {url?: string; width?: number; height?: number} | null;
+  /** Inline <svg> code pasted in the Studio (takes precedence over the file). */
+  logoSvg?: string | null;
+  logoWidth?: number | null;
+  logoAlt?: string | null;
+};

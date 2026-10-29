@@ -27,6 +27,7 @@ const STEGA_SKIP_FIELDS = new Set([
   'anchorId',
   'galleryLayout',
   'templateType',
+  'logoSvg',
 ]);
 
 export function getStudioUrl(env: Env) {
