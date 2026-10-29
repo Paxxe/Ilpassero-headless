@@ -131,6 +131,13 @@ function ProductMain({
 
   const {title, descriptionHtml, vendor} = product;
   const showDescription = section?.showDescription ?? true;
+  const galleryLayout = section?.galleryLayout ?? 'grid';
+  const price = selectedVariant?.price;
+  const compareAtPrice = selectedVariant?.compareAtPrice;
+  const discount =
+    price && compareAtPrice && Number(compareAtPrice.amount) > Number(price.amount)
+      ? Math.round((1 - Number(price.amount) / Number(compareAtPrice.amount)) * 100)
+      : 0;
 
   // Selected variant image first, then the rest of the product gallery
   const gallery = [
@@ -139,39 +146,29 @@ function ProductMain({
   ];
 
   return (
-    <div className="product">
-      {section ? (
-        <div className={`product-gallery product-gallery--${section.galleryLayout ?? 'grid'}`}>
-          {gallery.map((image, index) => (
-            <ProductImage key={image.id ?? index} image={image} />
-          ))}
+    <div className="pdp">
+      <div className={`pdp__gallery pdp__gallery--${galleryLayout}`} aria-label="Foto prodotto">
+        {gallery.length ? (
+          gallery.map((image, index) => (
+            <ProductImage key={image.id ?? index} image={image} loading={index === 0 ? 'eager' : 'lazy'} />
+          ))
+        ) : (
+          <ProductImage image={null} />
+        )}
+      </div>
+      <div className="pdp__info">
+        {(section?.showVendor ?? true) && vendor ? <p className="pdp__vendor">{vendor}</p> : null}
+        <h1 className="pdp__title">{title}</h1>
+        <div className="pdp__price">
+          <ProductPrice price={price} compareAtPrice={discount ? compareAtPrice : null} />
+          {discount ? <span className="pdp__badge">-{discount}%</span> : null}
         </div>
-      ) : (
-        <ProductImage image={selectedVariant?.image} />
-      )}
-      <div className="product-main">
-        {section?.showVendor && vendor ? <p className="cms-eyebrow">{vendor}</p> : null}
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
-        <ProductForm
-          productOptions={productOptions}
-          selectedVariant={selectedVariant}
-        />
-        {showDescription ? (
-          <>
-            <br />
-            <br />
-            <p>
-              <strong>Descrizione</strong>
-            </p>
-            <br />
-            <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-            <br />
-          </>
+        <ProductForm productOptions={productOptions} selectedVariant={selectedVariant} />
+        {showDescription && descriptionHtml ? (
+          <details className="pdp__details" open>
+            <summary>Descrizione</summary>
+            <div className="pdp__description" dangerouslySetInnerHTML={{__html: descriptionHtml}} />
+          </details>
         ) : null}
       </div>
       <Analytics.ProductView
